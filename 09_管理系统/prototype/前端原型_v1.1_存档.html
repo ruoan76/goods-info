@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品主数据管理维护系统 · 前端原型 v1.1（评审修订版）</title>
+<style>
+:root{--primary:#409eff;--success:#67c23a;--warning:#e6a23c;--danger:#f56c6c;--info:#909399;--text:#303133;--text2:#606266;--text3:#909399;--border:#dcdfe6;--bg:#f5f7fa;--sidebar:#1d2535}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:13px;color:var(--text);background:var(--bg)}
+button{font-family:inherit;cursor:pointer;border:none;font-size:13px}
+input,select{font-family:inherit;font-size:13px;outline:none}
+#login{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#1d2535,#2b3a55)}
+.login-box{background:#fff;border-radius:10px;padding:36px 40px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-box h2{font-size:18px;margin-bottom:4px}
+.login-box .sub{color:var(--text3);font-size:12px;margin-bottom:24px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px}
+.field input{width:100%;height:34px;border:1px solid var(--border);border-radius:4px;padding:0 10px}
+.field input:focus{border-color:var(--primary)}
+.btn{height:34px;padding:0 18px;border-radius:4px;background:var(--primary);color:#fff}
+.btn.block{width:100%;height:38px;font-size:14px}
+.btn.plain{background:#fff;color:var(--text2);border:1px solid var(--border)}
+.btn.danger{background:var(--danger)}
+.btn.warn{background:var(--warning)}
+.btn.sm{height:28px;padding:0 12px;font-size:12px}
+.login-tip{margin-top:14px;font-size:11px;color:var(--text3);text-align:center}
+#app{display:none;height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:210px;background:var(--sidebar);color:#aeb6c5;overflow-y:auto}
+.sidebar .logo{padding:18px 20px;color:#fff;font-size:15px;font-weight:600;border-bottom:1px solid #2b3548}
+.sidebar .logo small{display:block;font-size:10px;font-weight:400;color:#7a8499;margin-top:2px}
+.nav-group{padding:6px 0}
+.nav-group .gt{font-size:10px;color:#5d6778;padding:6px 20px;letter-spacing:1px}
+.nav-item{padding:10px 20px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.nav-item:hover{background:#2b3548;color:#fff}
+.nav-item.active{background:var(--primary);color:#fff}
+.nav-item .iron{font-size:10px;background:#3a465f;color:#9fb3d9;padding:1px 6px;border-radius:8px}
+.main{margin-left:210px;height:100vh;display:flex;flex-direction:column}
+.topbar{height:50px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.topbar .crumb{color:var(--text3);font-size:12px}
+.topbar .crumb b{color:var(--text);font-weight:600}
+.userbox{display:flex;align-items:center;gap:10px;font-size:12px}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px}
+.role-tag{background:#f0f9eb;color:var(--success);padding:2px 8px;border-radius:10px;font-size:11px}
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+.page-title{font-size:16px;font-weight:600;margin-bottom:4px}
+.page-desc{font-size:12px;color:var(--text3);margin-bottom:16px}
+.card{background:#fff;border-radius:6px;border:1px solid var(--border);padding:16px 20px;margin-bottom:16px}
+.card h3{font-size:14px;margin-bottom:12px}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.filter-row input,.filter-row select{height:32px;border:1px solid var(--border);border-radius:4px;padding:0 10px}
+.filter-row input{width:220px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #ebeef5}
+th{background:#fafbfc;color:var(--text3);font-weight:600;white-space:nowrap}
+tr:hover td{background:#f5f7fa}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;white-space:nowrap}
+.tg-blue{background:#ecf5ff;color:var(--primary)}.tg-green{background:#f0f9eb;color:var(--success)}.tg-orange{background:#fdf6ec;color:var(--warning)}.tg-red{background:#fef0f0;color:var(--danger)}.tg-gray{background:#f4f4f5;color:var(--info)}.tg-violet{background:#f5f0ff;color:#7c3aed}
+.pager{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:12px;font-size:12px;color:var(--text3)}
+.pager button{width:28px;height:28px;border:1px solid var(--border);background:#fff;border-radius:4px}
+.pager button.cur{background:var(--primary);color:#fff;border-color:var(--primary)}
+.iron-note{background:#f0f9eb;border-left:3px solid var(--success);padding:8px 12px;font-size:12px;color:#4a7a2a;border-radius:4px;margin-bottom:12px}
+.iron-note b{color:var(--success)}
+.iron-note.warn{background:#fdf6ec;border-color:var(--warning);color:#8a6d3b}
+.screen{display:none}
+.screen.active{display:block}
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start}
+.detail-head .bc{font-size:18px;font-weight:700;font-family:ui-monospace,Menlo,monospace}
+.detail-head .meta{color:var(--text3);font-size:12px;margin-top:4px}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin:16px 0 0}
+.tab{padding:10px 18px;cursor:pointer;font-size:13px;border-bottom:2px solid transparent;color:var(--text2)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.tab-pane{display:none;padding-top:16px}
+.tab-pane.active{display:block}
+.kv{display:grid;grid-template-columns:120px 1fr 120px 1fr;gap:8px 12px;font-size:12.5px}
+.kv .k{color:var(--text3)}
+.trace-item{background:#fafbfc;border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin-bottom:10px}
+.trace-item .t1{display:flex;justify-content:space-between;font-size:12.5px}
+.trace-item .t2{color:var(--text3);font-size:11.5px;margin-top:4px;font-family:ui-monospace,Menlo,monospace}
+.steps{display:flex;margin-bottom:20px}
+.step{flex:1;text-align:center;position:relative;color:var(--text3);font-size:12px}
+.step .dot{width:26px;height:26px;border-radius:50%;background:#e4e7ed;color:#fff;display:inline-flex;align-items:center;justify-content:center;margin-bottom:4px;font-size:12px}
+.step.on .dot{background:var(--primary)}
+.step.on{color:var(--primary);font-weight:600}
+.step::after{content:'';position:absolute;top:13px;left:calc(50% + 18px);width:calc(100% - 40px);height:2px;background:#e4e7ed}
+.step:last-child::after{display:none}
+.check-ok{background:#f0f9eb;border:1px solid #e1f3d8;border-radius:6px;padding:12px 14px;font-size:12.5px;color:#4a7a2a;margin-top:10px}
+.check-conflict{background:#fef0f0;border:1px solid #fde2e2;border-radius:6px;padding:12px 14px;font-size:12.5px;color:#a15555;margin-top:10px}
+.check-conflict b{color:var(--danger)}
+.check-samename{background:#fdf6ec;border:1px solid #faecd8;border-radius:6px;padding:12px 14px;font-size:12.5px;color:#8a6d3b;margin-top:10px}
+.tree-layout{display:grid;grid-template-columns:300px 1fr;gap:16px}
+.tree{font-size:12.5px;user-select:none}
+.tree .node{padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.tree .node:hover{background:#f5f7fa}
+.tree .node.sel{background:#ecf5ff;color:var(--primary)}
+.tree .children{padding-left:18px;border-left:1px dashed #e4e7ed;margin-left:8px}
+.tree .caret{color:var(--text3);font-size:10px;width:12px}
+.tree .c00{color:var(--text3);background:#f4f4f5;border-radius:4px}
+.tree .c00 .ph{font-size:10px;background:#e4e7ed;color:var(--text3);padding:0 6px;border-radius:8px}
+.toast{position:fixed;top:60px;right:24px;background:#fff;border-left:3px solid #409eff;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:12px 18px;font-size:13px;border-radius:4px;z-index:200;display:none}
+.proto-banner{position:fixed;bottom:0;left:210px;right:0;background:#1d2535;color:#8fa0c0;font-size:11px;padding:6px 20px;display:flex;justify-content:space-between;z-index:50}
+.proto-banner b{color:#c6d4f0}
+.dyn-form .fitem{margin-bottom:12px}
+.dyn-form label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px}
+.dyn-form label .req{color:var(--danger)}
+.dyn-form input{width:320px;height:32px;border:1px solid var(--border);border-radius:4px;padding:0 10px}
+.zero{color:var(--danger);font-weight:600}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="login-box">
+    <h2>商品主数据管理系统</h2>
+    <div class="sub">Goods MDM Console · v1.1 原型（评审修订版）</div>
+    <div class="field"><label>用户名</label><input value="zhang.san" readonly></div>
+    <div class="field"><label>密码</label><input type="password" value="********" readonly></div>
+    <button class="btn block" onclick="enterApp()">登 录</button>
+    <div class="login-tip">角色：Operator（建档/变更） · 原型模拟登录</div>
+  </div>
+</div>
+
+<div id="app">
+  <aside class="sidebar">
+    <div class="logo">商品主数据管理系统<small>Goods MDM · PostgreSQL 14</small></div>
+    <div class="nav-group"><div class="gt">商品管理</div>
+      <div class="nav-item active" data-s="goods-list" onclick="go(this)">商品档案</div>
+      <div class="nav-item" data-s="goods-new" onclick="go(this)">查重建档 <span class="iron">铁律①②</span></div>
+    </div>
+    <div class="nav-group"><div class="gt">分类管理</div>
+      <div class="nav-item" data-s="category" onclick="go(this)">类目树管理 <span class="iron">C00规约</span></div>
+    </div>
+    <div class="nav-group"><div class="gt">属性管理</div>
+      <div class="nav-item" data-s="attribute" onclick="go(this)">属性维护 <span class="iron">模板驱动</span></div>
+    </div>
+    <div class="nav-group"><div class="gt">条码管理</div>
+      <div class="nav-item" data-s="barcode" onclick="go(this)">别名与准入 <span class="iron">禁复用</span></div>
+    </div>
+    <div class="nav-group"><div class="gt">基础服务</div>
+      <div class="nav-item" data-s="admin" onclick="go(this)">字典 / 隔离区 / 权限</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb" id="crumb">商品管理 / <b>商品档案</b></div>
+      <div class="userbox"><span class="role-tag">Operator</span><div class="avatar">张</div><span>zhang.san</span><button class="btn plain sm" onclick="location.reload()">退出</button></div>
+    </div>
+    <div class="content">
+
+      <!-- 商品列表 -->
+      <div class="screen active" id="s-goods-list">
+        <div class="page-title">商品档案</div>
+        <div class="page-desc">4,325,381 条主档 · barcode 全库唯一 · 数据已按 PG 实库校准（真实样本行）</div>
+        <div class="card">
+          <div class="filter-row">
+            <input placeholder="条码精确查询（PK）" value="6901035623162">
+            <select><option>全部类目</option><option>C0101 休闲零食（574,031）</option><option>C0203 啤酒（31,088）</option><option>C1101 数码配件</option><option>C00 未分类（197,059）</option></select>
+            <select><option>全部来源</option><option>MAPPING 词典映射</option><option>AI_FILLBACK AI回填</option><option>SEMANTIC_FIX 语义修复</option><option>UNCLASSIFIED 未分类</option></select>
+            <select><option>全部等级</option><option>A 高置信</option><option>B AI回填</option><option>C 低置信</option><option>D 未分类</option></select>
+            <select><option>全部状态</option><option>ACTIVE</option><option>INACTIVE</option><option>VOIDED</option></select>
+            <button class="btn sm">查询</button>
+            <button class="btn plain sm" onclick="toast('导出：流式查询分批写 CSV（不整载内存），含当前过滤条件')">导出 CSV</button>
+            <button class="btn plain sm" onclick="go(document.querySelector('[data-s=goods-new]'))">+ 查重建档</button>
+          </div>
+          <table>
+            <tr><th>条码</th><th>商品名称</th><th>类目</th><th>来源</th><th>置信度</th><th>等级</th><th>状态</th><th>质量分</th><th>进价</th><th>售价</th><th>版本</th><th>操作</th></tr>
+            <tr style="cursor:pointer" onclick="showDetail()"><td style="font-family:Menlo">6901035623162</td><td>青岛啤酒经典1903-9度258毫升*6*4复古装箱啤</td><td>C0203 啤酒</td><td><span class="tag tg-blue">MAPPING</span></td><td>1.00</td><td><span class="tag tg-green">A</span></td><td><span class="tag tg-green">ACTIVE</span></td><td>96</td><td>¥130.00</td><td>¥220.00</td><td>1</td><td>详情</td></tr>
+            <tr><td style="font-family:Menlo">6901035621144</td><td>青岛啤酒经典10度500毫升*12工行定制罐啤</td><td>C0203 啤酒</td><td><span class="tag tg-blue">MAPPING</span></td><td>1.00</td><td><span class="tag tg-green">A</span></td><td><span class="tag tg-green">ACTIVE</span></td><td>100</td><td class="zero">¥0.00</td><td class="zero">¥0.00</td><td>1</td><td>详情</td></tr>
+            <tr><td style="font-family:Menlo">6901180953213</td><td>早餐饼干</td><td>C0103 饼干糕点</td><td><span class="tag tg-blue">MAPPING</span></td><td>1.00</td><td><span class="tag tg-green">A</span></td><td><span class="tag tg-green">ACTIVE</span></td><td>100</td><td>¥8.00</td><td>¥10.00</td><td>1</td><td>详情</td></tr>
+            <tr><td style="font-family:Menlo">6901180950380</td><td>443g果乐果香凤梨味果酱夹心饼干</td><td>C0103 饼干糕点</td><td><span class="tag tg-blue">MAPPING</span></td><td>1.00</td><td><span class="tag tg-green">A</span></td><td><span class="tag tg-green">ACTIVE</span></td><td>80</td><td>—</td><td>¥17.80</td><td>1</td><td>详情</td></tr>
+            <tr><td style="font-family:Menlo">9787534296482</td><td>2047瞎了眼的灯塔</td><td><span class="tag tg-gray">C00 未分类</span></td><td><span class="tag tg-gray">UNCLASSIFIED</span></td><td>—</td><td><span class="tag tg-gray">D</span></td><td><span class="tag tg-green">ACTIVE</span></td><td>100</td><td>—</td><td>—</td><td>1</td><td>详情</td></tr>
+          </table>
+          <div class="iron-note warn" style="margin-top:12px;margin-bottom:0">⚠ 真实数据提示：① 第 2 行为<b>零价商品</b>（inprice=0 共 53,574 行，待治理业务规则）② 第 5 行条码为 <b>ISBN 书号</b>（978 开头混入商品库，未分类积压中含书目）——两项均为评审发现的待决事项</div>
+          <div class="pager">共 4,325,381 条<button>‹</button><button class="cur">1</button><button>2</button><button>3</button><button>…</button><button>432,539</button><button>›</button></div>
+        </div>
+      </div>
+
+      <!-- 商品详情 -->
+      <div class="screen" id="s-goods-detail">
+        <div class="page-title">商品详情</div>
+        <div class="card">
+          <div class="detail-head">
+            <div>
+              <div class="bc">6901035623162</div>
+              <div class="meta">青岛啤酒经典1903-9度258毫升*6*4复古装箱啤 · C0203 啤酒 · v1 · 质量分 96</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <span class="tag tg-green" style="font-size:12px;padding:4px 12px">ACTIVE</span>
+              <button class="btn warn sm" onclick="toast('铁律③：停用不删除 → 状态流转至 INACTIVE（页面原型）')">停用</button>
+              <button class="btn plain sm" onclick="toast('INACTIVE → VOIDED 需 Steward 角色，VOIDED 联动条码禁复用 90 天')">作废</button>
+            </div>
+          </div>
+          <div class="tabs">
+            <div class="tab active" onclick="tab(this,'d1')">基本信息</div>
+            <div class="tab" onclick="tab(this,'d2')">决策血缘 trace</div>
+            <div class="tab" onclick="tab(this,'d3')">属性面板</div>
+            <div class="tab" onclick="tab(this,'d4')">变更履历</div>
+          </div>
+          <div class="tab-pane active" id="d1">
+            <div class="kv" style="margin-top:8px">
+              <span class="k">条码</span><span style="font-family:Menlo">6901035623162（EAN-13）</span>
+              <span class="k">单位</span><span>000002 <span class="tag tg-orange">语义待确认</span></span>
+              <span class="k">分类</span><span>C0203 啤酒 · 路径 /C02/C0203/</span>
+              <span class="k">来源</span><span>MAPPING（词典映射）</span>
+              <span class="k">进价</span><span>¥ 130.00（NUMERIC(16,6)）</span>
+              <span class="k">售价</span><span>¥ 220.00</span>
+              <span class="k">置信度</span><span>1.00</span>
+              <span class="k">质量等级</span><span><span class="tag tg-green">A 高置信映射</span></span>
+              <span class="k">质量分</span><span>96</span>
+              <span class="k">版本</span><span>v1（无治理修正）</span>
+            </div>
+          </div>
+          <div class="tab-pane" id="d2">
+            <div class="iron-note" style="margin-bottom:10px">trace 为<b>字段级投票血缘</b>（真实结构）：v=取值 · src=来源 · votes=票数 · rule=裁决规则 · win=胜出来源</div>
+            <div class="trace-item"><div class="t1"><b>GOODS_NAME</b><span class="tag tg-blue">MODE</span></div><div class="t2">{"v":"青岛啤酒经典1903-9度258毫升*6*4复古装箱啤","src":"goods_csv","rule":"MODE"}</div></div>
+            <div class="trace-item"><div class="t1"><b>UNIT_ID</b><span class="tag tg-orange">TIE_C2_TRUST</span></div><div class="t2">{"v":"000002","votes":"1:1","rule":"TIE_C2_TRUST","win":"goods_csv"}（平票按来源可信度裁决：goods_csv 0.9 &gt; merged_csv 0.7）</div></div>
+            <div class="trace-item"><div class="t1"><b>INPRICE</b><span class="tag tg-blue">MODE</span></div><div class="t2">{"v":130.0,"src":"merged_csv",...}</div></div>
+          </div>
+          <div class="tab-pane" id="d3">
+            <div class="iron-note"><b>模板驱动</b>：以下表单由 C0203 的 <code>attr_template</code> JSONB 动态生成（示意模板，实际模板待 Steward 配置）；<span style="color:var(--danger)">*</span> 为必填项</div>
+            <div class="dyn-form">
+              <div class="fitem"><label>净含量 (ml) <span class="req">*</span></label><input value="258×6×4"></div>
+              <div class="fitem"><label>包装形态 <span class="req">*</span></label><input value="箱装"></div>
+              <div class="fitem"><label>酒精度 (%)</label><input value="9.0"></div>
+              <button class="btn sm" onclick="toast('保存成功 · 同事务写入 sys_change_log（铁律②留痕）')">保存属性</button>
+            </div>
+          </div>
+          <div class="tab-pane" id="d4">
+            <table>
+              <tr><th>时间</th><th>操作</th><th>对象</th><th>变更前 → 后</th><th>操作人</th></tr>
+              <tr><td colspan="5" style="color:var(--text3)">该商品 v1 无治理修正记录（R12 修正集 2,980 行不含此码）；接入记录见「决策血缘 trace」</td></tr>
+            </table>
+          </div>
+        </div>
+        <button class="btn plain sm" onclick="go(document.querySelector('[data-s=goods-list]'))">← 返回列表</button>
+      </div>
+
+      <!-- 查重建档向导 -->
+      <div class="screen" id="s-goods-new">
+        <div class="page-title">查重建档向导</div>
+        <div class="page-desc">两段式：先查重后建档 · 三路校验（条码精确 / 同名精确 / 别名反向）</div>
+        <div class="card">
+          <div class="steps">
+            <div class="step on" id="w1"><span class="dot">1</span><br>条码查重</div>
+            <div class="step" id="w2"><span class="dot">2</span><br>同名校验</div>
+            <div class="step" id="w3"><span class="dot">3</span><br>填写档案</br></div>
+            <div class="step" id="w4"><span class="dot">4</span><br>确认建档</div>
+          </div>
+          <div class="iron-note"><b>铁律① 新增必查重</b>：barcode 命中或别名归并命中时，禁止重复建档，引导至主码。另校验 ISBN 形态（978/979 开头提示"书号非商品码"）。</div>
+          <div class="field" style="max-width:420px"><label>新商品条码（EAN-8 / EAN-13）</label>
+            <div style="display:flex;gap:8px"><input id="nb" style="flex:1" placeholder="试试 6901035623162 / 9787534296482 / 6931234567890" value="6931234567890"><button class="btn" onclick="doCheck()">校验准入</button></div>
+          </div>
+          <div id="check-result"></div>
+          <div id="next-step" style="display:none;margin-top:16px">
+            <button class="btn" onclick="toast('原型：进入第3步档案表单（类目/单位/价格/等级默认 C 低置信）')">下一步：填写档案 →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分类管理 -->
+      <div class="screen" id="s-category">
+        <div class="page-title">类目树管理</div>
+        <div class="page-desc">13 个一级 / 158 个二级（真实结构节选）· 商品实际使用 147 类 · C01=食品 / C02=酒类 / C09=饮料</div>
+        <div class="tree-layout">
+          <div class="card" style="margin:0">
+            <h3>类目树（C01 / C02 展开）</h3>
+            <div class="tree">
+              <div class="node"><span class="caret">▾</span><b>C01 食品</b><span class="tag tg-gray">L1</span></div>
+              <div class="children">
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>C0101 休闲零食 <span class="tag tg-gray">574,031</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>C0102 糖果巧克力 <span class="tag tg-gray">95,534</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>C0103 饼干糕点 <span class="tag tg-gray">112,252</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>C0104 坚果蜜饯肉干 <span class="tag tg-gray">66,676</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>C0105 方便速食 <span class="tag tg-gray">112,618</span></div>
+              </div>
+              <div class="node"><span class="caret">▾</span><b>C02 酒类</b><span class="tag tg-gray">L1</span></div>
+              <div class="children">
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>C0201 白酒 <span class="tag tg-gray">253,273</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>C0202 葡萄酒 <span class="tag tg-gray">66,234</span></div>
+                <div class="node sel" onclick="selCat(this)"><span class="caret">▸</span>C0203 啤酒 <span class="tag tg-gray">31,088</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>C0204 黄酒 <span class="tag tg-gray">6,246</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>C0205 洋酒 <span class="tag tg-gray">13,754</span></div>
+              </div>
+              <div class="node"><span class="caret">▸</span>C03 生鲜冷品</div>
+              <div class="node"><span class="caret">▸</span>C09 饮料</div>
+              <div class="node"><span class="caret">▸</span>C11 数码五金</div>
+              <div class="node c00" title="系统占位类目，不可挂新商品"><span class="caret">▪</span>C00 未分类 <span class="ph">系统占位</span><span class="tag tg-gray">197,059</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <h3>C0203 啤酒 <span class="tag tg-green">ACTIVE</span> <span class="tag tg-gray">external_code: 03000103</span></h3>
+              <div class="kv">
+                <span class="k">层级</span><span>L2 · 父 C02 酒类</span>
+                <span class="k">物化路径</span><span style="font-family:Menlo">/C02/C0203/</span>
+                <span class="k">挂载商品</span><span>31,088（实时统计）</span>
+                <span class="k">attr_template</span><span style="font-family:Menlo">null（待 Steward 配置）</span>
+              </div>
+              <div style="margin-top:14px;display:flex;gap:8px">
+                <button class="btn sm" onclick="showImpact()">调整影响分析</button>
+                <button class="btn plain sm" onclick="toast('原型：编辑类目 / 配置属性模板（Steward 角色）')">编辑 / 模板配置</button>
+                <button class="btn plain sm" onclick="toast('外部码映射：源系统 03000103 ↔ C0203（349 条映射之一）')">外部码映射</button>
+              </div>
+            </div>
+            <div class="iron-note" style="margin-top:0"><b>C00 占位规约</b>：C00（is_leaf=0）承载 197,059 条 UNCLASSIFIED（含 ISBN 书目积压），一致性检查已白名单豁免；界面禁用"挂载新商品到 C00"，且不提供删除。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 属性管理 -->
+      <div class="screen" id="s-attribute">
+        <div class="page-title">属性维护</div>
+        <div class="page-desc">goods_attribute KV 存储 · 模板必填校验 · 批量回填走 CSV 分批事务（500 行/批）</div>
+        <div class="card">
+          <h3>批量回填（CSV 上传）</h3>
+          <div class="filter-row">
+            <button class="btn plain sm" onclick="toast('原型：选择 CSV（barcode,attr_key,attr_value）')">选择 CSV 文件</button>
+            <span style="color:var(--text3)">goods_attr_backfill_20261123.csv · 预估 12,400 行 → 分 25 批事务</span>
+            <button class="btn sm" onclick="toast('校验：条码存在性 + 模板 attr_key 合法性 → 预检通过 12,392 / 拒绝 8（条码不存在）')">预检并回填</button>
+          </div>
+          <table>
+            <tr><th>批次</th><th>范围</th><th>行数</th><th>状态</th><th>备注</th></tr>
+            <tr><td>1</td><td>1 ~ 500</td><td>500</td><td><span class="tag tg-green">成功</span></td><td>—</td></tr>
+            <tr><td>2</td><td>501 ~ 1000</td><td>500</td><td><span class="tag tg-green">成功</span></td><td>—</td></tr>
+            <tr><td>3</td><td>1001 ~ 1500</td><td>500</td><td><span class="tag tg-orange">部分拒绝</span></td><td>8 行条码不存在，见明细</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>单条属性维护（barcode: 6901035623162）</h3>
+          <table>
+            <tr><th>attr_key</th><th>attr_value</th><th>模板必填</th><th>操作</th></tr>
+            <tr><td>净含量 (ml)</td><td>258×6×4</td><td><span class="tag tg-red">必填</span></td><td><a style="color:var(--primary);cursor:pointer">编辑</a></td></tr>
+            <tr><td>包装形态</td><td>箱装</td><td><span class="tag tg-red">必填</span></td><td><a style="color:var(--primary);cursor:pointer">编辑</a></td></tr>
+            <tr><td>酒精度 (%)</td><td>9.0</td><td><span class="tag tg-gray">选填</span></td><td><a style="color:var(--primary);cursor:pointer">编辑</a> · <a style="color:var(--danger);cursor:pointer">删除</a></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- 条码管理 -->
+      <div class="screen" id="s-barcode">
+        <div class="page-title">条码别名与准入</div>
+        <div class="page-desc">mdm_barcode_alias 启用 · VOIDED 条码 disabled_until 期内禁止复用（铁律③配套）</div>
+        <div class="card">
+          <h3>准入校验器</h3>
+          <div class="filter-row">
+            <input id="ba" style="width:240px" placeholder="输入条码" value="6901035623162">
+            <button class="btn sm" onclick="toast('校验结果：✓ EAN-13 格式合法 · ✓ 无 disabled_until 在期记录 · ⚠ 为既有主码（6901035623162），若为新建档将命中查重铁律①')">校验</button>
+          </div>
+          <div class="iron-note"><b>校验三路 + 书号识别</b>：① EAN-8/EAN-13 格式（8 位 29,411 条合法 EAN-8）② disabled_until 在期拦截 ③ 别名反向提示"已归并至主码 xxx" ④ 978/979 开头 ISBN 提示"书号非商品码"</div>
+        </div>
+        <div class="card">
+          <h3>换码登记 <button class="btn plain sm" onclick="toast('原型：提交换码 → 旧码登记 OLD_CODE 别名 + disabled_until = 今日+90 天')">提交换码</button></h3>
+          <div class="filter-row">
+            <input style="width:180px" placeholder="旧条码" value="6904444555566">
+            <span style="color:var(--text3)">→</span>
+            <input style="width:180px" placeholder="新主码" value="6905555666677">
+            <select style="height:32px"><option>OLD_CODE 换码</option><option>BIG_PACK 多包装</option></select>
+          </div>
+        </div>
+        <div class="card">
+          <h3>别名登记 <button class="btn plain sm" onclick="toast('原型：登记 BIG_PACK / OLD_CODE 类型别名')">+ 登记别名</button></h3>
+          <table>
+            <tr><th>别名条码</th><th>主码</th><th>类型</th><th>disabled_until</th><th>登记时间</th></tr>
+            <tr><td style="font-family:Menlo">6901111222233</td><td style="font-family:Menlo">6901035623162</td><td><span class="tag tg-blue">BIG_PACK</span></td><td>—</td><td>2026-11-23</td></tr>
+            <tr><td style="font-family:Menlo">6904444555566</td><td style="font-family:Menlo">6901180953213</td><td><span class="tag tg-orange">OLD_CODE</span></td><td><span class="tag tg-red">2027-02-21（禁复用期内）</span></td><td>2026-11-23</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- 基础服务 -->
+      <div class="screen" id="s-admin">
+        <div class="page-title">基础服务</div>
+        <div class="page-desc">单位字典 · 来源可信度 · 隔离区（只读）· 用户与角色</div>
+        <div class="card">
+          <h3>单位字典 sys_unit_dict <span class="tag tg-orange">名称语义待业务确认</span></h3>
+          <div class="iron-note warn">单位编码语义为<b>挂起的业务决策项</b>：以下名称仅为示意占位，正式名称须业务确认后录入（当前库 unit_id 值域 22 个，主码值 000007 占 1,694,410 行）</div>
+          <table>
+            <tr><th>unit_id</th><th>名称（示意）</th><th>挂载商品数</th><th>状态</th></tr>
+            <tr><td style="font-family:Menlo">000007</td><td>（待确认）</td><td>1,694,410</td><td><span class="tag tg-green">ACTIVE</span></td></tr>
+            <tr><td style="font-family:Menlo">000003</td><td>（待确认）</td><td>640,973</td><td><span class="tag tg-green">ACTIVE</span></td></tr>
+            <tr><td style="font-family:Menlo">000001</td><td>（待确认）</td><td>631,888</td><td><span class="tag tg-green">ACTIVE</span></td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>来源可信度 sys_source_trust（真实数据）</h3>
+          <table>
+            <tr><th>来源编码</th><th>来源名</th><th>可信度</th><th>用途</th></tr>
+            <tr><td style="font-family:Menlo">goods_csv</td><td>商品信息.csv</td><td>0.90</td><td>平票裁决优先源（TIE_C2_TRUST）</td></tr>
+            <tr><td style="font-family:Menlo">merged_csv</td><td>merged.csv</td><td>0.70</td><td>次优先源</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>隔离区 <span class="tag tg-gray">只读入口 · 裁决在治理侧（方案二边界）</span></h3>
+          <div class="iron-note"><b>边界声明</b>：本页面 goods_ro 账号只读查询 dq_quarantine（138,083 条 SAME_CODE_DIFF_GOODS 全 OPEN）；裁决流程归数据治理侧，管理系统不提供裁决操作。</div>
+          <table>
+            <tr><th>quarantine_id</th><th>条码</th><th>冲突类型</th><th>状态</th><th>发现批次</th></tr>
+            <tr><td style="font-family:Menlo">Q-000001</td><td style="font-family:Menlo">6920202888901</td><td><span class="tag tg-orange">SAME_CODE_DIFF_GOODS</span></td><td><span class="tag tg-gray">OPEN</span></td><td>GOV-20261122-01</td></tr>
+            <tr><td style="font-family:Menlo">Q-000002</td><td style="font-family:Menlo">6920202888902</td><td><span class="tag tg-orange">SAME_CODE_DIFF_GOODS</span></td><td><span class="tag tg-gray">OPEN</span></td><td>GOV-20261122-01</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>用户与角色（一期应用层配置）</h3>
+          <table>
+            <tr><th>用户</th><th>角色</th><th>权限摘要</th></tr>
+            <tr><td>zhang.san</td><td><span class="tag tg-blue">Operator</span></td><td>查询 + 建档 + 属性/别名维护</td></tr>
+            <tr><td>li.si</td><td><span class="tag tg-violet">Steward</span></td><td>类目/模板/状态流转/用户管理</td></tr>
+            <tr><td>wang.wu</td><td><span class="tag tg-gray">Viewer</span></td><td>只读（含隔离区）</td></tr>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="proto-banner"><span><b>交互原型 v1.1（评审修订版）</b> · 数据已按 PG 实库校准（C0203 啤酒 31,088 / C0101 休闲零食 574,031 等） · Vue3 + Element Plus 视觉规范</span><span>铁律①新增必查重 ②变更必留痕 ③停用不删除 ④状态CHECK兜底</span></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function go(el){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));el.classList.add('active');
+const s=el.dataset.s;document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+const map={'goods-list':'s-goods-list','goods-new':'s-goods-new','category':'s-category','attribute':'s-attribute','barcode':'s-barcode','admin':'s-admin'};
+document.getElementById(map[s]).classList.add('active');
+const g=el.closest('.nav-group').querySelector('.gt').textContent;
+document.getElementById('crumb').innerHTML=g+' / <b>'+el.textContent.replace(/铁律.*|C00规约|模板驱动|禁复用/,'').trim()+'</b>';}
+function showDetail(){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-goods-detail').classList.add('active');document.getElementById('crumb').innerHTML='商品管理 / <b>商品详情 6901035623162</b>';}
+function tab(el,p){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.tab-pane').forEach(t=>t.classList.remove('active'));document.getElementById(p).classList.add('active');}
+function selCat(el){document.querySelectorAll('.tree .node').forEach(n=>n.classList.remove('sel'));el.classList.add('sel');}
+function showImpact(){toast('调整影响分析：C0203 啤酒挂载 31,088 行（实时COUNT）· 96%+ MAPPING 来源 · DEPRECATED 前置校验：0 引用方可停用');}
+function doCheck(){const bc=document.getElementById('nb').value;const r=document.getElementById('check-result');
+let html='';
+if(bc==='6901035623162'){html='<div class="check-conflict"><b>✗ 查重命中（铁律①拦截）</b><br>条码 6901035623162 已存在：<b>青岛啤酒经典1903-9度258毫升*6*4复古装箱啤</b>（C0203 啤酒，ACTIVE）。禁止重复建档，请前往商品详情。试试其他条码：9787534296482 / 6931234567890</div>';document.getElementById('next-step').style.display='none';step(1);}
+else if(bc==='9787534296482'){html='<div class="check-samename"><b>⚠ 书号识别</b><br>978/979 开头为 ISBN 书号（非商品 EAN 码）。库中已有同码记录「2047瞎了眼的灯塔」挂 C00 未分类。如需收录书籍类商品请走类目扩充流程，不建议作为普通商品建档。</div>';document.getElementById('next-step').style.display='none';step(1);}
+else{html='<div class="check-ok">✓ 条码格式合法（EAN-13）· 无 disabled_until 在期拦截 · 无别名归并记录</div><div class="check-samename" style="margin-top:8px"><b>同名提示（防绕过别名归并）</b><br>未命中条码，但库中存在同名商品约 40.6% 为同名多码场景——请确认是否应走别名归并而非新建。</div>';document.getElementById('next-step').style.display='block';step(2);step(3);}
+r.innerHTML=html;}
+function step(n){document.getElementById('w'+n).classList.add('on');}
+function enterApp(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';}
+let t;function toast(m){const e=document.getElementById('toast');e.textContent=m;e.style.display='block';clearTimeout(t);t=setTimeout(()=>e.style.display='none',3400);}
+</script>
+</body>
+</html>

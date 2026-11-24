@@ -1,0 +1,17 @@
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.bak*
+.env
+.env.*
+*.dump
+*.sql.gz
+/backend/venv/
+/backend/wheels/*.whl
+/frontend/node_modules/
+/frontend/dist/
+/frontend/dist
+/frontend/dist-new*/
+/frontend/releases/
+/frontend/*.tgz
+._*

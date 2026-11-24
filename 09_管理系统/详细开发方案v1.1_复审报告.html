@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>详细开发方案 v1.1 · 复审报告</title>
+<style>
+:root{--ink:#1f2937;--sub:#4b5563;--mut:#6b7280;--line:#e5e7eb;--bg:#f5f7fa;--card:#fff;--pri:#2563eb;--red:#dc2626;--amb:#d97706;--grn:#059669}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.72}
+.wrap{max-width:1100px;margin:0 auto;padding:26px 30px 60px}
+.hero{background:linear-gradient(135deg,#1e3a8a,#2563eb 62%,#0891b2);color:#fff;border-radius:14px;padding:26px 32px;margin-bottom:18px}
+.hero h1{margin:0 0 6px;font-size:24px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.kpi{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:10px 12px}
+.kpi .n{font-size:20px;font-weight:700}.kpi .l{font-size:11px;opacity:.86}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 24px;margin-bottom:16px}
+h2{font-size:17px;margin:0 0 12px;padding-left:11px;border-left:4px solid var(--pri)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin:9px 0}
+th{background:#f1f5f9;text-align:left;padding:7px 9px;border:1px solid var(--line);font-weight:600}
+td{padding:7px 9px;border:1px solid var(--line);vertical-align:top}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;background:#eef2ff;color:#4338ca;padding:1px 5px;border-radius:4px;font-size:11.4px}
+.tag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:600}
+.t-red{background:#fee2e2;color:#b91c1c}.t-amb{background:#fef3c7;color:#b45309}.t-blue{background:#dbeafe;color:#1d4ed8}.t-grn{background:#d1fae5;color:#047857}
+.issue{border:1px solid var(--line);border-left:4px solid var(--amb);border-radius:8px;padding:12px 16px;margin:11px 0;background:#fffdf9}
+.issue.p1{border-left-color:var(--amb)}
+.issue.p2{border-left-color:var(--pri);background:#fafcff}
+.issue .hd{font-weight:700;font-size:14px;margin-bottom:6px}
+.issue .ev{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:5px;padding:8px 11px;font-size:12px;margin:7px 0}
+.issue .fx{color:#047857;font-weight:600}
+.good{background:#ecfdf5;border-left:4px solid var(--grn);padding:10px 14px;border-radius:6px;font-size:13px;margin:11px 0}
+.note{background:#eff6ff;border-left:4px solid var(--pri);padding:10px 14px;border-radius:6px;font-size:13px;margin:11px 0}
+.danger{background:#fef2f2;border-left:4px solid var(--red);padding:10px 14px;border-radius:6px;font-size:13px;margin:11px 0}
+ul{margin:6px 0;padding-left:22px}li{margin:3px 0}
+.footer{text-align:center;color:var(--mut);font-size:12px;margin-top:22px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="hero">
+  <h1>详细开发方案 v1.1 · 复审报告</h1>
+  <div style="font-size:13px;opacity:.92">复审时间 <b>2026-11-23 21:15</b>　|　重点：<b>只审 v1.1 新写入的内容</b>（原 10 项已确认闭环，不重复）　|　方法：端点逐条对账 + 架构原文回溯 + 命令可执行性检查</div>
+  <div class="kpis">
+    <div class="kpi"><div class="n">4</div><div class="l">新问题</div></div>
+    <div class="kpi"><div class="n">10 / 10</div><div class="l">原问题闭环</div></div>
+    <div class="kpi"><div class="n">P1×3 / P2×1</div><div class="l">新优先级</div></div>
+    <div class="kpi"><div class="n">v1.2</div><div class="l">建议快修版本</div></div>
+  </div>
+</div>
+
+<div class="card">
+<h2>一、复审结论</h2>
+<p>v1.1 对原 10 项问题的修订<b>全部真实闭环</b>——nginx 前移、令牌落库、方法分布、D5 拆分、sys_role 枚举、19 项映射、DBA 账号、wheel 数量、两类演练、端口与收权，逐项机器确认。</p>
+<p>但<b>修订本身写入的新内容引入了 4 个新问题</b>，其中 3 个是 P1：映射表 2 个端点写错（照抄会 404）、可选黑名单表把刚统一的"5 张表"口径又撕开、nginx 配置命令的反斜杠导致复制粘贴失效。都是小改动，但正因为它发生在"可开工基线"上，必须在进 D1 前修掉。</p>
+<div class="danger"><b>启动判定：维持"暂缓"。</b>4 项修完（预计一次快修 v1.2）即可正式进 D1，不需要再走全量评审。</div>
+</div>
+
+<div class="card">
+<h2>二、新问题清单</h2>
+
+<div class="issue p1">
+<div class="hd"><span class="tag t-red">P1-1</span> §5.2 映射表 2 个端点写错，照抄调用会 404</div>
+<div class="ev"><b>机器对账结果（映射表 27 处引用逐条比对接口 v1.2）：</b><br>
+① <code>GET /barcodes/validate</code> → 接口 v1.2 真实为 <code>POST /api/v1/barcodes/validate</code>（准入校验是 POST，方法写错）。<br>
+② <code>GET/POST/PUT /admin/users</code> → 编辑用户的真实路径是 <code>PUT /api/v1/admin/users/{account}</code>（缺 <code>{account}</code> 路径参数）。<br>
+其余 25 处全部命中真实端点。</div>
+<p><span class="fx">建议：</span>①改 <code>POST /barcodes/validate</code>；②拆为 <code>GET/POST /admin/users</code> + <code>PUT /admin/users/{account}</code>。并把"映射表端点必须从 OpenAPI 自动提取"写入 §5.1 契约一致校验，杜绝手抄。</p>
+</div>
+
+<div class="issue p1">
+<div class="hd"><span class="tag t-amb">P1-2</span> "可选 sys_token_blacklist"重新撕开刚统一的"5 张表"口径</div>
+<p>v1.1 的 P1-3 刚把角色改为枚举、稳定为 5 张表；但 P0-2 修订里写了"可选写 <code>sys_token_blacklist</code> 带过期时间"，这是<b>第 6 张表</b>的口子。</p>
+<div class="ev">全文"5 张"出现 4 处、<code>sys_token_blacklist</code> 出现 1 处。实现者若采纳可选方案，m1 建表数、接口 v1.2 交付判定、启动检查清单三处都要跟着改，口径再次漂移。</div>
+<p><span class="fx">建议：</span>二选一并删除另一说法：推荐<b>只用 token_version 方案</b>，删掉"可选 sys_token_blacklist"整句——token_version 递增已能让旧令牌在全 worker 立即失效，黑名单表是冗余设计。</p>
+</div>
+
+<div class="issue p1">
+<div class="hd"><span class="tag t-amb">P1-3</span> 令牌落库实质修正了架构 v1.1 明文规定的"内存表"方案，但未标注差异</div>
+<div class="ev"><b>架构方案 v1.1 安全设计原文：</b>"认证：JWT（HS256，8h 有效），登出采用<b>令牌黑名单内存表（重启即清，内部系统可接受）</b>；登录失败 5 次锁 10 分钟。"<br>
+v1.1 改为落库是<b>技术上的正确修正</b>（2 worker 下内存表确实失效），但文档同时写"不破坏架构裁决"——严格说，架构的 6 项裁决不含内存表，但它确实是架构安全章节的明文方案。评审报告当时也据此称"不破坏裁决"，是同一盲点。</div>
+<p><span class="fx">建议：</span>在变更记录补一句："本节修正架构 v1.1 §安全设计的内存黑名单方案（2 worker 多进程下不适用），改 token_version 落库，<b>列入回写架构 v1.2 备案清单</b>；架构 6 项裁决本身不变。"这样后来人不会照架构原文把内存表改回来。</p>
+</div>
+
+<div class="issue p2">
+<div class="hd"><span class="tag t-blue">P2-1</span> nginx 命令的 <code>\$uri</code> 反斜杠在 HTML 中不会转义，复制即错</div>
+<p>D1 第 3 条写 <code>try_files \$uri \$uri/ /index.html;</code>。这是 shell 双引号内的转义写法，但放在 HTML <code>&lt;code&gt;</code> 里会<b>原样显示反斜杠</b>；用户复制到 nginx 配置会得到 <code>\$uri</code> 字面量，nginx 不认，站点配置失败。</p>
+<p><span class="fx">建议：</span>改为 <code>try_files $uri $uri/ /index.html;</code>（文档中无需转义）。如果是在 shell 命令里演示才需要 \$。</p>
+</div>
+
+</div>
+
+<div class="card">
+<h2>三、通过项（v1.1 修订质量确认）</h2>
+<div class="good">
+<ul>
+<li><b>原 10 项全部闭环</b>：P0×2 / P1×5 / P2×3 逐项机器确认，旧值残留 0（仅变更记录的"旧值→新值"引述 1 处，正常）。</li>
+<li><b>§5.2 功能清单真实</b>：19 项取自方案二 v3.5 §3.1~§3.5 原文（5+4+3+3+4），非编造；映射表 20 行（表头+19 项）。</li>
+<li><b>映射准确率 25/27</b>：除上述 2 处，其余端点方法+路径与接口 v1.2 完全一致。</li>
+<li><b>数字对账正确</b>：三天拆分 7+19+14=40；方法分布 GET18/POST15/PUT7；标签全配对。</li>
+<li><b>token_version 方案本身正确</b>：登出 version+1、claim 带 ver、端点比对，确实解决 2 worker 跨进程登出失效，且不引 Redis。</li>
+<li><b>D1 前置现可判定</b>：nginx 站点前移后，":8090 静态可见"这条验收终于有了可操作的前置步骤。</li>
+</ul>
+</div>
+</div>
+
+<div class="card">
+<h2>四、快修清单（v1.2，一次修完即可进 D1）</h2>
+<table>
+<tr><th style="width:70px">编号</th><th>动作</th></tr>
+<tr><td><span class="tag t-red">P1-1</span></td><td>映射表 <code>GET /barcodes/validate</code> → <code>POST</code>；<code>/admin/users</code> PUT 补 <code>{account}</code>；§5.1 增加"映射端点从 OpenAPI 提取"约束</td></tr>
+<tr><td><span class="tag t-amb">P1-2</span></td><td>删除"可选 sys_token_blacklist"整句，只保留 token_version 方案，稳定 5 张表</td></tr>
+<tr><td><span class="tag t-amb">P1-3</span></td><td>变更记录补"修正架构 v1.1 内存表方案，列入回写架构 v1.2 备案，6 项裁决不变"</td></tr>
+<tr><td><span class="tag t-blue">P2-1</span></td><td><code>\$uri</code> → <code>$uri</code></td></tr>
+</table>
+<div class="note"><b>无需再走全量评审：</b>以上 4 项均为文档层定点修正，无设计变更，修完机器复核一遍即可作为 D1~D13 开工基线。</div>
+</div>
+
+<div class="footer">详细开发方案 v1.1 复审报告 · 2026-11-23 · 基于端点逐条对账与架构原文回溯</div>
+</div>
+</body>
+</html>
