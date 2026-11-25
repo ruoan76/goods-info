@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品主数据管理系统 · 前端原型 v1.5（用户管理专业版）</title>
+<style>
+:root{--primary:#409eff;--success:#67c23a;--warning:#e6a23c;--danger:#f56c6c;--info:#909399;--text:#303133;--text2:#606266;--text3:#909399;--border:#dcdfe6;--bg:#f5f7fa;--sidebar:#1d2535}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:13px;color:var(--text);background:var(--bg)}
+button{font-family:inherit;cursor:pointer;border:none;font-size:13px}
+input,select{font-family:inherit;font-size:13px;outline:none}
+#login{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#1d2535,#2b3a55)}
+.login-box{background:#fff;border-radius:10px;padding:36px 40px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-box h2{font-size:18px;margin-bottom:4px}
+.login-box .sub{color:var(--text3);font-size:12px;margin-bottom:24px}
+.login-box .login-tip{margin-top:14px;font-size:11.5px;color:var(--text3)}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px}
+.field input{width:100%;height:34px;border:1px solid var(--border);border-radius:4px;padding:0 10px}
+.btn{height:34px;padding:0 18px;border-radius:4px;background:var(--primary);color:#fff}
+.btn.block{width:100%;height:38px;font-size:14px}
+.btn.plain{background:#fff;color:var(--text2);border:1px solid var(--border)}
+.btn.warn{background:var(--warning)}
+.btn.sm{height:28px;padding:0 12px;font-size:12px}
+.btn.big{height:48px;font-size:15px;padding:0 28px}
+#app{display:none;height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:210px;background:var(--sidebar);color:#aeb6c5;overflow-y:auto}
+.sidebar .logo{padding:18px 20px;color:#fff;font-size:15px;font-weight:600;border-bottom:1px solid #2b3548}
+.nav-group{padding:6px 0}
+.nav-group .gt{font-size:10px;color:#5d6778;padding:6px 20px;letter-spacing:1px}
+.nav-group.admin{border-top:1px solid #2b3548;margin-top:6px}
+.nav-group.admin .gt{color:#8a6d3b}
+.nav-item{padding:10px 20px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.nav-item:hover{background:#2b3548;color:#fff}
+.nav-item.active{background:var(--primary);color:#fff}
+.nav-item .adm{font-size:10px;background:#3a465f;color:#9fb3d9;padding:1px 6px;border-radius:8px}
+.main{margin-left:210px;height:100vh;display:flex;flex-direction:column}
+.topbar{height:50px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.topbar .crumb{color:var(--text3);font-size:12px}
+.topbar .crumb b{color:var(--text);font-weight:600}
+.userbox{display:flex;align-items:center;gap:10px;font-size:12px}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px}
+.role-tag{background:#f0f9eb;color:var(--success);padding:2px 8px;border-radius:10px;font-size:11px}
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+.page-title{font-size:16px;font-weight:600;margin-bottom:4px}
+.page-desc{font-size:12px;color:var(--text3);margin-bottom:16px}
+.card{background:#fff;border-radius:6px;border:1px solid var(--border);padding:16px 20px;margin-bottom:16px}
+.card h3{font-size:14px;margin-bottom:12px}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.filter-row input,.filter-row select{height:32px;border:1px solid var(--border);border-radius:4px;padding:0 10px}
+.filter-row input{width:220px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #ebeef5}
+th{background:#fafbfc;color:var(--text3);font-weight:600;white-space:nowrap}
+tr:hover td{background:#f5f7fa}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;white-space:nowrap}
+.tg-blue{background:#ecf5ff;color:var(--primary)}.tg-green{background:#f0f9eb;color:var(--success)}.tg-orange{background:#fdf6ec;color:var(--warning)}.tg-red{background:#fef0f0;color:var(--danger)}.tg-gray{background:#f4f4f5;color:var(--info)}.tg-violet{background:#f5f0ff;color:#7c3aed}
+.pager{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:12px;font-size:12px;color:var(--text3)}
+.pager button{width:28px;height:28px;border:1px solid var(--border);background:#fff;border-radius:4px}
+.pager button.cur{background:var(--primary);color:#fff;border-color:var(--primary)}
+.tip-note{background:#f0f9eb;border-left:3px solid var(--success);padding:8px 12px;font-size:12px;color:#4a7a2a;border-radius:4px;margin-bottom:12px}
+.tip-note.warn{background:#fdf6ec;border-color:var(--warning);color:#8a6d3b}
+.tip-note b{color:var(--success)}
+.screen{display:none}
+.screen.active{display:block}
+/* ===== 工作台驾驶舱 ===== */
+.scan-hero{background:#fff;border-radius:10px;border:1px solid var(--border);padding:30px 28px 26px;margin-bottom:16px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.03)}
+.scan-hero .st{font-size:16px;font-weight:600;margin-bottom:6px}
+.scan-hero .sd{font-size:12px;color:var(--text3);margin-bottom:18px}
+.scan-wrap{display:flex;gap:10px;max-width:560px;margin:0 auto}
+.scan-wrap input{flex:1;height:48px;font-size:17px;font-family:ui-monospace,Menlo,monospace;letter-spacing:1px;border:2px solid var(--primary);border-radius:8px;padding:0 16px}
+.scan-wrap input:focus{box-shadow:0 0 0 3px rgba(64,158,255,.15)}
+.scan-hint{margin-top:12px;font-size:11.5px;color:var(--text3)}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.todo-card{background:#fff;border-radius:8px;border:1px solid var(--border);padding:16px 18px;cursor:pointer;transition:box-shadow .15s}
+.todo-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.todo-card .num{font-size:26px;font-weight:700;margin:2px 0}
+.todo-card .tl{font-size:13px;font-weight:600}
+.todo-card .td2{font-size:11.5px;color:var(--text3);margin-top:4px}
+.todo-card .go{float:right;color:var(--primary);font-size:12px}
+.todo-card.ro{cursor:default}
+.recent-item{display:flex;justify-content:space-between;padding:9px 4px;border-bottom:1px solid #f2f3f5;font-size:12.5px;cursor:pointer}
+.recent-item:hover{background:#fafbfc}
+.recent-item .rt{color:var(--text3);font-size:11.5px}
+/* ===== 详情即点即改 ===== */
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start}
+.detail-head .bc{font-size:18px;font-weight:700}
+.detail-head .meta{color:var(--text3);font-size:12px;margin-top:4px}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin:16px 0 0}
+.tab{padding:10px 18px;cursor:pointer;font-size:13px;border-bottom:2px solid transparent;color:var(--text2)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.tab-pane{display:none;padding-top:16px}
+.tab-pane.active{display:block}
+.kv{display:grid;grid-template-columns:120px 1fr 120px 1fr;gap:8px 12px;font-size:12.5px}
+.kv .k{color:var(--text3)}
+.editable{border-bottom:1px dashed #a0cfff;cursor:pointer;padding:0 2px}
+.editable:hover{background:#ecf5ff;border-radius:3px}
+.editable::after{content:'✎';font-size:10px;color:var(--primary);margin-left:3px;vertical-align:super}
+.inline-input{height:26px;font-size:12.5px;border:1px solid var(--primary);border-radius:4px;padding:0 8px;width:120px}
+.sysinfo{margin-top:14px;padding-top:10px;border-top:1px dashed var(--border);font-size:11.5px;color:var(--text3);line-height:1.9}
+.history-item{border-left:2px solid var(--primary);padding:8px 0 8px 14px;margin-left:6px;position:relative}
+.history-item::before{content:'';position:absolute;left:-5px;top:14px;width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.history-item .ht{font-size:12px;color:var(--text3)}
+.history-item .hb{font-size:12.5px;margin-top:2px}
+.dyn-form .fitem{margin-bottom:12px}
+.dyn-form label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px}
+.dyn-form label .req{color:var(--danger)}
+.dyn-form input,.dyn-form select{width:320px;height:32px;border:1px solid var(--border);border-radius:4px;padding:0 10px}
+.zero{color:var(--danger);font-weight:600}
+.adm-only{display:none}
+body.admin .adm-only{display:inline-block}
+body.admin .nav-item .adm{display:none}
+body.admin .adm-plain{display:flex}
+.adm-plain{display:none}
+/* 确认对话框 */
+#dlg-mask{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:none;align-items:center;justify-content:center}
+#dlg{background:#fff;border-radius:8px;width:400px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+#dlg h4{font-size:15px;margin-bottom:10px}
+#dlg p{font-size:12.5px;color:var(--text2);line-height:1.8;margin-bottom:18px}
+#dlg .row{display:flex;justify-content:flex-end;gap:10px}
+.toast{position:fixed;top:60px;right:24px;background:#fff;border-left:3px solid #409eff;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:12px 18px;font-size:13px;border-radius:4px;z-index:400;display:none}
+.proto-banner{position:fixed;bottom:0;left:210px;right:0;background:#1d2535;color:#8fa0c0;font-size:11px;padding:6px 20px;display:flex;justify-content:space-between;z-index:50}
+.proto-banner b{color:#c6d4f0}
+/* ===== 左树右表（商品档案） ===== */
+.tree-layout{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start}
+.tree{font-size:12.5px;user-select:none}
+.tree .node{padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tree .node:hover{background:#f5f7fa}
+.tree .node.sel{background:#ecf5ff;color:var(--primary)}
+.tree .children{padding-left:14px;border-left:1px dashed #e4e7ed;margin-left:8px}
+.tree .children.hide{display:none}
+.tree .caret{color:var(--text3);font-size:10px;width:12px;flex-shrink:0}
+.tree .cnt{margin-left:auto;color:var(--text3);font-size:10.5px;flex-shrink:0}
+.tree .node.sel .cnt{color:var(--primary)}
+.tree .c00{color:var(--text3);background:#f4f4f5;border-radius:4px}
+.tree .c00 .ph{font-size:10px;background:#e4e7ed;color:var(--text3);padding:0 6px;border-radius:8px;flex-shrink:0}
+.tree-search{width:100%;height:30px;border:1px solid var(--border);border-radius:4px;padding:0 10px;margin-bottom:10px}
+.gtree-wrap{max-height:calc(100vh - 200px);overflow-y:auto}
+.gl-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.gl-head .gl-title{font-size:14px;font-weight:600}
+.gl-head .gl-sub{font-size:12px;color:var(--text3)}
+.gl-table tr td{cursor:pointer}
+.empty-row td{padding:44px 0;text-align:center;color:var(--text3);font-size:12.5px;cursor:default}
+/* ===== 用户管理（专业版） ===== */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.stat{background:#fff;border:1px solid var(--border);border-radius:6px;padding:14px 18px}
+.stat .n{font-size:24px;font-weight:700;line-height:1.2}
+.stat .l{font-size:11.5px;color:var(--text3);margin-top:5px}
+.stat .mini{font-size:10.5px;color:var(--text3);margin-top:7px;border-top:1px dashed var(--border);padding-top:6px}
+.ulist tr{cursor:pointer}
+.role-cell{display:flex;align-items:center;gap:7px}
+.role-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.op{color:var(--primary);cursor:pointer;margin-right:10px;font-size:12px;white-space:nowrap}
+.op.warn{color:var(--warning)}.op.danger{color:var(--danger)}
+.row-disabled td{opacity:.55}
+/* 抽屉 */
+.drawer-mask{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:190;display:none}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:460px;background:#fff;z-index:191;transform:translateX(100%);transition:transform .22s;display:flex;flex-direction:column;box-shadow:-6px 0 24px rgba(0,0,0,.14)}
+.drawer.open{transform:translateX(0)}
+.drawer-hd{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start}
+.drawer-hd .t{font-size:15px;font-weight:600}
+.drawer-hd .s{font-size:11.5px;color:var(--text3);margin-top:4px}
+.drawer-hd .x{cursor:pointer;color:var(--text3);font-size:18px;line-height:1}
+.drawer-bd{flex:1;overflow-y:auto;padding:18px 22px}
+.drawer-ft{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.dsec{margin-bottom:22px}
+.dsec h4{font-size:12px;color:var(--text3);font-weight:600;margin-bottom:10px;letter-spacing:.5px}
+.drow{display:flex;padding:7px 0;font-size:12.5px;line-height:1.5}
+.drow .k{width:92px;color:var(--text3);flex-shrink:0}
+.drow .v{flex:1}
+.pline{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px}
+.pyes{color:var(--success);font-weight:600}.pno{color:var(--text3)}
+/* 表单弹窗 */
+#uf-mask{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:320;display:none;align-items:center;justify-content:center}
+.uf-box{background:#fff;border-radius:8px;width:440px;max-height:88vh;overflow-y:auto;box-shadow:0 12px 44px rgba(0,0,0,.22)}
+.uf-box .hd{padding:16px 20px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.uf-box .bd{padding:18px 20px}
+.uf-box .ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.uf-box .field{margin-bottom:13px}
+.uf-box .field label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px}
+.uf-box .field input,.uf-box .field select{width:100%;height:32px;border:1px solid var(--border);border-radius:4px;padding:0 9px}
+.uf-box .field .hint{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.5}
+.uf-box .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="login-box">
+    <h2>商品主数据管理系统</h2>
+    <div class="sub">扫一下，就找到</div>
+    <div class="field"><label>用户名</label><input value="zhang.san" readonly></div>
+    <div class="field"><label>密码</label><input type="password" value="********" readonly></div>
+    <button class="btn block" onclick="enterApp()">登 录</button>
+    <div class="login-tip">当前角色：录入员 · 顶部可切换管理员视角（原型演示）</div>
+  </div>
+</div>
+
+<div id="app">
+  <aside class="sidebar">
+    <div class="logo">商品主数据管理系统</div>
+    <div class="nav-group"><div class="gt">商品工作台</div>
+      <div class="nav-item active" data-s="home" onclick="go(this)">工作台</div>
+      <div class="nav-item" data-s="goods-list" onclick="go(this)">商品档案</div>
+      <div class="nav-item" data-s="goods-new" onclick="go(this)">新增商品</div>
+    </div>
+    <div class="nav-group admin"><div class="gt">管理后台</div>
+      <div class="nav-item" data-s="category" onclick="go(this)">分类与属性模板 <span class="adm">管理员</span></div>
+      <div class="nav-item" data-s="barcode" onclick="go(this)">条码管理 <span class="adm">管理员</span></div>
+      <div class="nav-item" data-s="dict" onclick="go(this)">基础字典 <span class="adm">管理员</span></div>
+      <div class="nav-item" data-s="govern" onclick="go(this)">数据治理 <span class="adm">管理员</span></div>
+      <div class="nav-item" data-s="users" onclick="go(this)">用户管理 <span class="adm">管理员</span></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb" id="crumb">商品工作台 / <b>工作台</b></div>
+      <div class="userbox">
+        <select id="roleSwitch" onchange="switchRole(this)" style="height:26px;font-size:12px;border:1px solid var(--border);border-radius:4px">
+          <option value="op">录入员（张三）</option>
+          <option value="adm">管理员（李四）</option>
+        </select>
+        <span class="role-tag" id="roleTag">录入员</span>
+        <button class="btn plain sm" onclick="location.reload()">退出</button>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- ============ 工作台首页（驾驶舱） ============ -->
+      <div class="screen active" id="s-home">
+        <div class="scan-hero">
+          <div class="st">扫码 / 输条码，直达商品</div>
+          <div class="sd">扫码枪对准商品条码扫一下；没有的商品会自动进入建档</div>
+          <div class="scan-wrap">
+            <input id="scanbox" autofocus placeholder="扫一下，或输入条码后回车（试试 6901035623162 / 6931234567890）" onkeydown="if(event.key==='Enter')scanGo()">
+            <button class="btn big" onclick="scanGo()">查 询</button>
+          </div>
+          <div class="scan-hint">支持 8 位和 13 位商品条码 · 也输商品名称（回车进列表）</div>
+        </div>
+        <div class="dash-grid">
+          <div>
+            <div class="card" style="padding:14px 16px"><h3 style="margin-bottom:8px">今日待办</h3>
+              <div class="todo-card" style="border:none;padding:10px 2px" onclick="goFillPrice()">
+                <span class="go">去处理 →</span>
+                <div class="tl">价格待补 <span style="font-size:11px;color:var(--text3)">（价格为 0 或未填）</span></div>
+                <div class="num" style="color:var(--warning)">53,574</div>
+                <div class="td2">填一个少一个，点这里进入补价清单</div>
+              </div>
+              <div class="todo-card ro" style="border:none;padding:10px 2px">
+                <div class="tl">暂未分类 <span class="tag tg-gray">管理员处理</span></div>
+                <div class="num" style="color:var(--info)">197,059</div>
+                <div class="td2">含一批书籍类商品，需扩充分类后归属，由管理员跟进</div>
+              </div>
+            </div>
+            <div class="card" style="padding:14px 16px"><h3 style="margin-bottom:6px">最近处理</h3>
+              <div class="recent-item" onclick="showDetail()"><span>青岛啤酒经典1903…装箱啤 <span class="rt">售价 218 → 220</span></span><span class="rt">今天 09:12 · 我</span></div>
+              <div class="recent-item" onclick="showDetail()"><span>早餐饼干 <span class="rt">新增建档</span></span><span class="rt">昨天 16:40 · 我</span></div>
+              <div class="recent-item" style="border:none" onclick="showDetail()"><span>443g果乐果香凤梨味果酱夹心饼干 <span class="rt">补售价 17.80</span></span><span class="rt">昨天 15:02 · 我</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="padding:14px 16px"><h3 style="margin-bottom:8px">常用功能</h3>
+              <div class="filter-row" style="margin-bottom:10px">
+                <button class="btn sm" onclick="go(document.querySelector('[data-s=goods-new]'))">+ 新增商品</button>
+                <button class="btn plain sm" onclick="go(document.querySelector('[data-s=goods-list]'))">按分类浏览</button>
+                <button class="btn plain sm" onclick="toast('导出当前筛选结果为 Excel/CSV 文件')">导出数据</button>
+              </div>
+              <div class="tip-note" style="margin:0">今天已建档 3 个 · 补价 5 个 · 改动均已自动记录</div>
+            </div>
+            <div class="card" style="padding:14px 16px"><h3 style="margin-bottom:6px">小提示</h3>
+              <div style="font-size:12px;color:var(--text2);line-height:2">
+                · 扫码枪即插即用，扫到的条码会自动填进上方输入框<br>
+                · 详情页里<b>点价格、名称就能直接改</b>，改完回车保存<br>
+                · 商品档案页<b>左边选分类、右边看商品</b>，逛着找也方便<br>
+                · 停用的商品记录永远保留，随时可以恢复
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 补价清单（待办入口） ============ -->
+      <div class="screen" id="s-fillprice">
+        <div class="page-title">价格待补清单</div>
+        <div class="page-desc">这些商品的价格为 0 或未填，填一个少一个 · 剩余 <b id="fp-count">53,574</b> 条</div>
+        <div class="card">
+          <table>
+            <tr><th>条码</th><th>商品名称</th><th>当前售价</th><th>填入新售价</th><th></th></tr>
+            <tr id="fp1"><td style="font-family:Menlo">6901035621144</td><td>青岛啤酒经典10度500毫升*12工行定制罐啤</td><td class="zero">价格待补</td>
+              <td><input class="inline-input" id="fpv1" placeholder="如 198.00"></td><td><button class="btn sm" onclick="fillPrice(1)">保存</button></td></tr>
+            <tr id="fp2"><td style="font-family:Menlo">6902029011069</td><td>农夫山泉饮用天然水550ml*24整箱</td><td class="zero">价格待补</td>
+              <td><input class="inline-input" id="fpv2" placeholder="如 35.00"></td><td><button class="btn sm" onclick="fillPrice(2)">保存</button></td></tr>
+            <tr id="fp3"><td style="font-family:Menlo">6920202888901</td><td>待处理商品（一码多品，需先确认是哪个商品）</td><td><span class="tag tg-orange">先确认商品</span></td>
+              <td><button class="btn plain sm" onclick="toast('该条码存在一码多品冲突，已转给数据治理流程处理')">转治理处理</button></td><td></td></tr>
+          </table>
+          <div class="tip-note" style="margin:12px 0 0">填完价格点保存即生效，改动自动记录到商品历史；空着不填也可以，明天它还在这个清单里</div>
+        </div>
+      </div>
+
+      <!-- ============ 商品档案（左树右表） ============ -->
+      <div class="screen" id="s-goods-list">
+        <div class="page-title">商品档案</div>
+        <div class="page-desc">左边选分类，右边看商品 · 想快速找一个？回到工作台扫码更快</div>
+        <div class="tree-layout">
+          <div class="card" style="margin:0">
+            <input class="tree-search" id="cat-filter" placeholder="搜索分类名称" oninput="filterTree(this.value)">
+            <div class="gtree-wrap"><div class="tree" id="gctree"></div></div>
+            <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);font-size:11px;color:var(--text3)">13 个大类 · 149 个小类（真实分类体系）</div>
+          </div>
+          <div class="card" style="margin:0">
+            <div class="gl-head">
+              <div class="gl-title" id="gl-path">全部分类</div>
+              <div class="gl-sub">共 <b id="gl-count" style="color:var(--primary)">4,325,381</b> 条</div>
+            </div>
+            <div class="filter-row" style="margin-bottom:10px">
+              <input id="list-q" placeholder="条码或商品名称，回车查询" onkeydown="if(event.key==='Enter')toast('在当前分类内按输入条件查询')">
+              <select><option>全部状态</option><option>在售</option><option>已停用</option><option>已作废</option></select>
+              <select><option>价格不限</option><option>有价格</option><option>价格待补</option></select>
+              <button class="btn sm" onclick="toast('在当前分类内按输入条件查询')">查询</button>
+              <button class="btn plain sm" onclick="toast('导出当前分类的筛选结果为 Excel/CSV 文件')">导出</button>
+              <button class="btn plain sm" onclick="go(document.querySelector('[data-s=goods-new]'))">+ 新增商品</button>
+            </div>
+            <table class="gl-table">
+              <thead><tr><th>条码</th><th>商品名称</th><th>分类</th><th>售价</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody id="gl-tbody"></tbody>
+            </table>
+            <div class="pager" id="gl-pager">共 4,325,381 条 · 建议用左侧分类或搜索定位<button>‹</button><button class="cur">1</button><button>2</button><button>3</button><button>…</button><button>›</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 商品详情（字段即点即改） ============ -->
+      <div class="screen" id="s-goods-detail">
+        <div class="page-title">商品详情</div>
+        <div class="card">
+          <div class="detail-head">
+            <div>
+              <div class="bc editable" onclick="editField(this,'商品名称')" id="nameField" title="点击修改名称">青岛啤酒经典1903-9度258毫升*6*4复古装箱啤</div>
+              <div class="meta">条码 6901035623162 · 分类：啤酒（点击分类可调整）</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <span class="tag tg-green" style="font-size:12px;padding:4px 12px">在售</span>
+              <button class="btn warn sm" onclick="confirmDlg('停用这个商品？','停用后商品不再对外使用，但记录完整保留，随时可以恢复。','已停用 · 可在商品详情中恢复')">停用</button>
+              <button class="btn plain sm adm-only" onclick="confirmDlg('作废这个商品？','作废是不可逆操作，需管理员确认。作废后的条码 90 天内不能再次使用。','已作废 · 该条码 90 天内不能复用')">作废</button>
+              <span class="tag tg-gray adm-only" style="font-size:10px;padding:3px 6px">管理员可见</span>
+            </div>
+          </div>
+          <div class="tabs">
+            <div class="tab active" onclick="tab(this,'d1')">基本信息</div>
+            <div class="tab" onclick="tab(this,'d3')">商品属性</div>
+            <div class="tab" onclick="tab(this,'d4')">历史记录</div>
+          </div>
+          <div class="tab-pane active" id="d1">
+            <div class="kv" style="margin-top:8px">
+              <span class="k">条码</span><span style="font-family:Menlo">6901035623162（13 位）</span>
+              <span class="k">单位</span>
+              <span><select style="height:28px;border:1px solid var(--border);border-radius:4px;padding:0 6px"><option selected>箱</option><option>瓶</option><option>罐</option><option>盒</option><option>袋</option></select></span>
+              <span class="k">分类</span><span><select style="height:28px;border:1px solid var(--border);border-radius:4px;padding:0 6px"><option>食品 → 酒类 → 啤酒</option><option>食品 → 休闲零食</option><option>食品 → 饼干糕点</option></select></span>
+              <span class="k">状态</span><span><span class="tag tg-green">在售</span></span>
+              <span class="k">进价</span><span class="editable" onclick="editField(this,'进价')">¥ 130.00</span>
+              <span class="k">售价</span><span class="editable" onclick="editField(this,'售价')">¥ 220.00</span>
+            </div>
+            <div class="tip-note" style="margin:14px 0 0">带 ✎ 的字样<b>点一下就能改</b>，改完回车保存，自动记录到历史</div>
+            <div class="sysinfo">系统信息（供参考）：数据来源 人工核对 · 数据可信度 高 · 数据质量 96 分 · 2026-11-22 由外部商品表导入</div>
+          </div>
+          <div class="tab-pane" id="d3">
+            <div class="tip-note"><b>商品属性</b>：按「啤酒」分类的属性要求填写，带 <span style="color:var(--danger)">*</span> 的为必填项</div>
+            <div class="dyn-form" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px">
+              <div class="fitem"><label>净含量 (ml) <span class="req">*</span></label><input value="258×6×4"></div>
+              <div class="fitem"><label>包装形态 <span class="req">*</span></label><input value="箱装"></div>
+              <div class="fitem"><label>酒精度 (%)</label><input value="9.0"></div>
+              <div class="fitem"><label>保质期</label><input placeholder="如 180 天"></div>
+              <button class="btn sm" onclick="toast('保存成功 · 本次修改已记录到历史')">保存属性</button>
+            </div>
+          </div>
+          <div class="tab-pane" id="d4">
+            <div class="tip-note">本页展示这条商品的每次变动：谁、什么时候、改了什么</div>
+            <div class="history-item"><div class="ht">今天 09:12 · 张三</div><div class="hb">售价 218.00 → 220.00</div></div>
+            <div class="history-item"><div class="ht">2026-11-22 · 系统导入</div><div class="hb">从「商品信息表」导入（两个来源不一致时，采用更可靠的那个）</div></div>
+            <div class="history-item"><div class="ht">2026-11-22 · 系统整理</div><div class="hb">名称、条码确认无误；分类判定为「啤酒」（人工核对规则，可信度高）</div></div>
+          </div>
+        </div>
+        <button class="btn plain sm" onclick="go(document.querySelector('[data-s=goods-list]'))">← 返回商品档案</button>
+      </div>
+
+      <!-- ============ 新增商品（扫码连续建档） ============ -->
+      <div class="screen" id="s-goods-new">
+        <div class="page-title">新增商品</div>
+        <div class="page-desc">扫一下新商品的条码（或手动输入），没有重复就直接填写信息</div>
+        <div class="card">
+          <div class="field" style="max-width:420px"><label>商品条码（扫码枪扫一下会自动填入）</label>
+            <div style="display:flex;gap:8px"><input id="nb" style="flex:1;height:38px;font-size:14px;font-family:ui-monospace,Menlo,monospace" placeholder="扫码或输入条码" onkeydown="if(event.key==='Enter')doCheck()"><button class="btn" style="height:38px" onclick="doCheck()">继续</button></div>
+          </div>
+          <div id="check-result"></div>
+          <div id="next-step" style="display:none;margin-top:16px">
+            <div class="tip-note">条码可用，请补充商品信息（都填完保存更快）</div>
+            <div class="dyn-form" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;max-width:720px">
+              <div class="fitem"><label>商品名称 <span class="req">*</span></label><input id="nf-name" placeholder="如：青岛啤酒经典1903 500毫升*12"></div>
+              <div class="fitem"><label>分类 <span class="req">*</span></label><select><option>请选择分类</option><option>食品 → 酒类 → 啤酒</option><option>食品 → 休闲零食</option><option>食品 → 饼干糕点</option></select></div>
+              <div class="fitem"><label>单位</label><select><option>箱</option><option>瓶</option><option>罐</option><option>盒</option><option>袋</option></select></div>
+              <div class="fitem"><label>进价（元）</label><input placeholder="0.00"></div>
+              <div class="fitem"><label>售价（元）</label><input placeholder="0.00"></div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:6px">
+              <button class="btn" onclick="saveNew(false)">保存</button>
+              <button class="btn plain" onclick="saveNew(true)">保存并扫下一个 ⚡</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 分类与属性模板（管理后台） ============ -->
+      <div class="screen" id="s-category">
+        <div class="page-title">分类与属性模板</div>
+        <div class="page-desc">13 个大类 / 149 个启用小类 · 面向管理员</div>
+        <div class="tree-layout">
+          <div class="card" style="margin:0">
+            <h3>分类树（食品 / 酒类 展开）</h3>
+            <div class="tree">
+              <div class="node"><span class="caret">▾</span><b>食品</b> <span class="cnt">1,173,168</span></div>
+              <div class="children">
+                <div class="node" onclick="selCat(this)">休闲零食 <span class="cnt">574,031</span></div>
+                <div class="node" onclick="selCat(this)">糖果巧克力 <span class="cnt">95,534</span></div>
+                <div class="node" onclick="selCat(this)">饼干糕点 <span class="cnt">112,252</span></div>
+                <div class="node" onclick="selCat(this)">坚果蜜饯肉干 <span class="cnt">66,676</span></div>
+                <div class="node" onclick="selCat(this)">方便速食 <span class="cnt">112,618</span></div>
+                <div class="node" onclick="selCat(this)">粮油干货 <span class="cnt">107,413</span></div>
+                <div class="node" onclick="selCat(this)">厨房调味 <span class="cnt">104,644</span></div>
+              </div>
+              <div class="node"><span class="caret">▾</span><b>酒类</b> <span class="cnt">370,595</span></div>
+              <div class="children">
+                <div class="node" onclick="selCat(this)">白酒 <span class="cnt">253,273</span></div>
+                <div class="node" onclick="selCat(this)">葡萄酒 <span class="cnt">66,234</span></div>
+                <div class="node sel" onclick="selCat(this)">啤酒 <span class="cnt">31,088</span></div>
+                <div class="node" onclick="selCat(this)">黄酒 <span class="cnt">6,246</span></div>
+                <div class="node" onclick="selCat(this)">洋酒 <span class="cnt">13,754</span></div>
+              </div>
+              <div class="node"><span class="caret">▸</span>生鲜冷品 <span class="cnt">131,408</span></div>
+              <div class="node"><span class="caret">▸</span>饮料 <span class="cnt">237,324</span></div>
+              <div class="node"><span class="caret">▸</span>家居用品 <span class="cnt">1,101,628</span></div>
+              <div class="node"><span class="caret">▸</span>数码五金 <span class="cnt">58,851</span></div>
+              <div class="node c00" title="系统占位分类，不能新增商品到此类"><span class="caret">▪</span>未分类 <span class="ph">系统占位</span> <span class="cnt">197,059</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <h3>啤酒 <span class="tag tg-green">使用中</span></h3>
+              <div class="kv">
+                <span class="k">所属</span><span>食品 → 酒类 → 啤酒</span>
+                <span class="k">商品数</span><span>31,088（实时统计）</span>
+                <span class="k">属性模板</span><span>未设置（可设置该类商品需填哪些属性，如净含量、包装形态）</span>
+              </div>
+              <div style="margin-top:14px;display:flex;gap:8px">
+                <button class="btn sm" onclick="toast('调整影响分析：「啤酒」类目下有 31,088 个商品。调整前系统会自动检查影响范围，有商品的分类不能直接删除')">调整影响分析</button>
+                <button class="btn plain sm" onclick="toast('编辑分类信息 / 设置属性模板')">编辑 / 设置属性模板</button>
+                <button class="btn plain sm" onclick="toast('外部编码对照：外部系统编码 03000103 ↔ 啤酒（共 349 条对照关系之一）')">外部编码对照</button>
+              </div>
+            </div>
+            <div class="tip-note warn" style="margin-top:0"><b>「未分类」说明</b>：约 19.7 万条暂未分类的商品集中在这里（含书籍类商品积压）。它是系统自动归置的仓库，不能往里新增商品，也不能删除。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 条码管理（管理后台） ============ -->
+      <div class="screen" id="s-barcode">
+        <div class="page-title">条码管理</div>
+        <div class="page-desc">条码检查 · 换码登记 · 多包装条码归并 · 面向管理员</div>
+        <div class="card">
+          <h3>条码检查</h3>
+          <div class="filter-row">
+            <input style="width:240px" placeholder="输入条码" value="6901035623162">
+            <button class="btn sm" onclick="toast('检查结果：✓ 格式正确（13 位商品条码）· ✓ 无使用限制 · 注意：该条码已有商品（青岛啤酒经典1903…）')">检查</button>
+          </div>
+          <div class="tip-note">系统自动检查 4 项：① 条码格式（8 位或 13 位商品条码）② 是否在使用限制期内（作废后 90 天内不能复用）③ 是否已归并到其他主条码 ④ 是否为书号（书籍编号，不是商品条码）</div>
+        </div>
+        <div class="card">
+          <h3>换码登记 <button class="btn plain sm" onclick="toast('提交换码：旧条码自动登记为「旧码」，90 天内不能被其他商品使用')">提交换码</button></h3>
+          <div class="filter-row">
+            <input style="width:180px" placeholder="旧条码" value="6904444555566">
+            <span style="color:var(--text3)">→</span>
+            <input style="width:180px" placeholder="新主条码" value="6905555666677">
+            <select style="height:32px"><option>换码（旧码换新码）</option><option>多包装（大包装条码）</option></select>
+          </div>
+        </div>
+        <div class="card">
+          <h3>已登记条码</h3>
+          <table>
+            <tr><th>条码</th><th>主条码</th><th>类型</th><th>使用限制</th><th>登记时间</th></tr>
+            <tr><td style="font-family:Menlo">6901111222233</td><td style="font-family:Menlo">6901035623162</td><td><span class="tag tg-blue">多包装</span></td><td>—</td><td>2026-11-23</td></tr>
+            <tr><td style="font-family:Menlo">6904444555566</td><td style="font-family:Menlo">6901180953213</td><td><span class="tag tg-orange">换码旧码</span></td><td><span class="tag tg-red">2027-02-21 前不能复用</span></td><td>2026-11-23</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ 基础字典（管理后台） ============ -->
+      <div class="screen" id="s-dict">
+        <div class="page-title">基础字典</div>
+        <div class="page-desc">维护系统用到的基础数据：单位、数据来源 · 面向管理员</div>
+        <div class="card">
+          <h3>单位字典 <span class="tag tg-orange">名称待业务确认</span>
+            <button class="btn plain sm" style="float:right" onclick="toast('新增单位：编码 + 名称 + 排序（名称需业务确认后录入）')">+ 新增单位</button>
+          </h3>
+          <div class="tip-note warn">单位编码含义尚未确认：以下名称仅为示意，正式名称须业务确认后录入（库中共 22 种单位编码）</div>
+          <table>
+            <tr><th>编码</th><th>名称（示意）</th><th>使用商品数</th><th>排序</th><th>状态</th><th>操作</th></tr>
+            <tr><td style="font-family:Menlo">000007</td><td>（待确认）</td><td>1,694,410</td><td>1</td><td><span class="tag tg-green">启用</span></td><td><a style="color:var(--primary);cursor:pointer" onclick="toast('编辑单位名称（需业务确认后生效）')">编辑</a></td></tr>
+            <tr><td style="font-family:Menlo">000003</td><td>（待确认）</td><td>640,973</td><td>2</td><td><span class="tag tg-green">启用</span></td><td><a style="color:var(--primary);cursor:pointer" onclick="toast('编辑单位名称（需业务确认后生效）')">编辑</a></td></tr>
+            <tr><td style="font-family:Menlo">000001</td><td>（待确认）</td><td>631,888</td><td>3</td><td><span class="tag tg-green">启用</span></td><td><a style="color:var(--primary);cursor:pointer" onclick="toast('编辑单位名称（需业务确认后生效）')">编辑</a></td></tr>
+          </table>
+          <div class="pager">共 22 条<button>‹</button><button class="cur">1</button><button>2</button><button>3</button><button>›</button></div>
+        </div>
+        <div class="card">
+          <h3>数据来源说明</h3>
+          <div class="tip-note">商品资料有两个来源。数据打架时，系统按可靠程度自动采用更可靠的一方，规则如下</div>
+          <table>
+            <tr><th>来源</th><th>可靠程度</th><th>采用规则</th><th>状态</th></tr>
+            <tr><td>商品信息表</td><td><span class="tag tg-green">更可靠</span>（0.90）</td><td>两个来源数据打架时，优先采用此表</td><td><span class="tag tg-green">启用</span></td></tr>
+            <tr><td>合并表</td><td><span class="tag tg-orange">次可靠</span>（0.70）</td><td>仅在前者缺失时采用</td><td><span class="tag tg-green">启用</span></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ 数据治理（管理后台） ============ -->
+      <div class="screen" id="s-govern">
+        <div class="page-title">数据治理</div>
+        <div class="page-desc">与数据治理流程协作的问题清单 · 本系统只读，处理归治理流程 · 面向管理员</div>
+        <div class="card">
+          <h3>「一码多品」冲突 <span class="tag tg-orange">138,083 条待处理</span>
+            <button class="btn plain sm" style="float:right" onclick="toast('导出待处理清单，交给数据治理流程处理')">导出清单</button>
+          </h3>
+          <div class="tip-note warn">同一个条码对应了不同商品。这些条码在本系统中<b>禁止新增/修改商品</b>，避免脏数据扩散；处理结果由治理流程回流后自动解锁。</div>
+          <table>
+            <tr><th>条码</th><th>问题类型</th><th>涉及商品</th><th>状态</th><th>发现时间</th></tr>
+            <tr><td style="font-family:Menlo">6920202888901</td><td><span class="tag tg-orange">一码多品</span></td><td>2 个候选商品</td><td><span class="tag tg-gray">待治理流程裁决</span></td><td>2026-11-22 导入时发现</td></tr>
+            <tr><td style="font-family:Menlo">6920202888902</td><td><span class="tag tg-orange">一码多品</span></td><td>2 个候选商品</td><td><span class="tag tg-gray">待治理流程裁决</span></td><td>2026-11-22 导入时发现</td></tr>
+          </table>
+          <div class="pager">共 138,083 条 · 处理进度 0<button>‹</button><button class="cur">1</button><button>2</button><button>3</button><button>…</button><button>›</button></div>
+        </div>
+        <div class="card">
+          <h3>暂未分类积压 <span class="tag tg-gray">197,059 条</span></h3>
+          <div class="tip-note">其中约 7.8 万条为书号商品（书籍编号），体系当前无「图书」类目可归属。增设类目后可批量迁移——此项需业务拍板后由治理流程执行，本系统提供查询与迁移后的落库。</div>
+          <div style="margin-top:4px;display:flex;gap:8px">
+            <button class="btn plain sm" onclick="toast('查看暂未分类商品（跳转商品档案 · 未分类）')">查看积压商品</button>
+            <button class="btn plain sm" onclick="toast('类目增设提案：需业务拍板「图书」一级类目后，由治理流程批量迁移')">类目增设提案</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 用户管理（管理后台·专业版） ============ -->
+      <div class="screen" id="s-users">
+        <div class="page-title">用户管理</div>
+        <div class="page-desc">管理谁能登录、能做什么 · 点一行看详情，改动全部留痕</div>
+        <div class="stat-row">
+          <div class="stat"><div class="n" id="us-all">4</div><div class="l">全部账号</div><div class="mini">含 1 个已停用</div></div>
+          <div class="stat"><div class="n" style="color:var(--success)" id="us-on">3</div><div class="l">正常使用</div><div class="mini">可登录系统</div></div>
+          <div class="stat"><div class="n" style="color:var(--warning)" id="us-adm">1</div><div class="l">管理员</div><div class="mini">拥有全部权限</div></div>
+          <div class="stat"><div class="n" style="color:var(--danger)" id="us-off">1</div><div class="l">已停用</div><div class="mini">不能登录 · 可随时恢复</div></div>
+        </div>
+        <div class="card">
+          <h3>用户列表
+            <button class="btn sm" style="float:right" onclick="openUserForm()">+ 新增用户</button>
+          </h3>
+          <div class="filter-row">
+            <input id="u-q" placeholder="账号或姓名，输入即筛选" oninput="renderUsers()">
+            <select id="u-role" onchange="renderUsers()"><option value="">全部角色</option><option>录入员</option><option>管理员</option><option>只读</option></select>
+            <select id="u-status" onchange="renderUsers()"><option value="">全部状态</option><option>启用</option><option>停用</option></select>
+            <span style="font-size:12px;color:var(--text3)" id="u-result"></span>
+          </div>
+          <table>
+            <thead><tr><th>账号</th><th>姓名</th><th>角色</th><th>状态</th><th>最近登录</th><th>操作</th></tr></thead>
+            <tbody id="u-tbody"></tbody>
+          </table>
+          <div class="tip-note" style="margin:12px 0 0">点任意一行可查看用户详情、登录记录与完整权限；停用账号后立即不能登录，历史操作记录全部保留</div>
+        </div>
+        <div class="card">
+          <h3>角色权限一览</h3>
+          <table>
+            <tr><th>能做的事</th><th style="text-align:center">录入员</th><th style="text-align:center">管理员</th><th style="text-align:center">只读</th></tr>
+            <tr><td>查看商品、按分类浏览、扫码查询</td><td style="text-align:center;color:var(--success)">✓</td><td style="text-align:center;color:var(--success)">✓</td><td style="text-align:center;color:var(--success)">✓</td></tr>
+            <tr><td>新增商品、修改名称/价格/属性</td><td style="text-align:center;color:var(--success)">✓</td><td style="text-align:center;color:var(--success)">✓</td><td style="text-align:center;color:var(--text3)">—</td></tr>
+            <tr><td>停用商品</td><td style="text-align:center;color:var(--text3)">—</td><td style="text-align:center;color:var(--success)">✓</td><td style="text-align:center;color:var(--text3)">—</td></tr>
+            <tr><td>作废商品（不可逆）</td><td style="text-align:center;color:var(--text3)">—</td><td style="text-align:center;color:var(--success)">✓</td><td style="text-align:center;color:var(--text3)">—</td></tr>
+            <tr><td>分类、属性模板、条码、字典</td><td style="text-align:center;color:var(--text3)">—</td><td style="text-align:center;color:var(--success)">✓</td><td style="text-align:center;color:var(--text3)">—</td></tr>
+            <tr><td>用户管理（新增/停用/改角色）</td><td style="text-align:center;color:var(--text3)">—</td><td style="text-align:center;color:var(--success)">✓</td><td style="text-align:center;color:var(--text3)">—</td></tr>
+            <tr><td>导出数据</td><td style="text-align:center;color:var(--text3)">—</td><td style="text-align:center;color:var(--success)">✓</td><td style="text-align:center;color:var(--success)">✓</td></tr>
+          </table>
+          <div class="tip-note" style="margin:12px 0 0">权限由角色决定，改角色立即生效；每次改动（谁、何时、改了什么）都会记录，可随时追溯</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="proto-banner"><span><b>交互原型 v1.5（用户管理专业版）</b> · 分类树与商品数取自真实库 · 顶部可切换角色视角</span><span>左树选分类 · 右表看商品 · 用户管理交互闭环</span></div>
+</div>
+
+<!-- 用户详情抽屉 -->
+<div class="drawer-mask" id="u-drawer-mask" onclick="closeDrawer()"></div>
+<div class="drawer" id="u-drawer">
+  <div class="drawer-hd">
+    <div><div class="t" id="ud-name">—</div><div class="s" id="ud-account">—</div></div>
+    <span class="x" onclick="closeDrawer()">✕</span>
+  </div>
+  <div class="drawer-bd" id="ud-body"></div>
+  <div class="drawer-ft" id="ud-foot"></div>
+</div>
+
+<!-- 新增/编辑用户表单 -->
+<div id="uf-mask"><div class="uf-box">
+  <div class="hd"><span id="uf-title">新增用户</span><span class="x" style="cursor:pointer;color:var(--text3)" onclick="closeUserForm()">✕</span></div>
+  <div class="bd">
+    <div class="field"><label>账号 <span style="color:var(--danger)">*</span></label><input id="uf-account" placeholder="如 zhang.san（登录用，创建后不能修改）"><div class="hint" id="uf-acc-hint">用姓名拼音，全系统唯一</div></div>
+    <div class="grid2">
+      <div class="field"><label>姓名 <span style="color:var(--danger)">*</span></label><input id="uf-name" placeholder="如 张三"></div>
+      <div class="field"><label>角色 <span style="color:var(--danger)">*</span></label><select id="uf-role"><option>录入员</option><option>管理员</option><option>只读</option></select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>所属部门</label><input id="uf-dept" placeholder="如 商品部"></div>
+      <div class="field"><label>手机号</label><input id="uf-phone" placeholder="选填，用于找回密码"></div>
+    </div>
+    <div class="field"><label>状态</label><select id="uf-status"><option>启用</option><option>停用</option></select></div>
+    <div class="tip-note" id="uf-tip" style="margin:4px 0 0">保存后生成初始密码，首次登录强制修改；改动会记录到系统操作日志</div>
+  </div>
+  <div class="ft"><button class="btn plain sm" onclick="closeUserForm()">取消</button><button class="btn sm" onclick="saveUser()">保存</button></div>
+</div></div>
+
+<!-- 确认对话框 -->
+<div id="dlg-mask"><div id="dlg">
+  <h4 id="dlg-title"></h4><p id="dlg-msg"></p>
+  <div class="row"><button class="btn plain sm" onclick="closeDlg()">再想想</button><button class="btn sm" onclick="doConfirm()">确认</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 真实分类体系（13 大类 / 149 启用小类，数字为实库商品数） ================= */
+const CATS=[
+['C01','食品',1173168,1,[['C0101','休闲零食',574031],['C0102','糖果巧克力',95534],['C0103','饼干糕点',112252],['C0104','坚果蜜饯肉干',66676],['C0105','方便速食',112618],['C0106','粮油干货',107413],['C0107','厨房调味',104644]]],
+['C02','酒类',370595,1,[['C0201','白酒',253273],['C0202','葡萄酒',66234],['C0203','啤酒',31088],['C0204','黄酒',6246],['C0205','洋酒',13754]]],
+['C03','生鲜冷品',131408,0,[['C0301','水果',17866],['C0302','蔬菜',17658],['C0303','肉禽蛋',39022],['C0304','冷藏冰品',26911],['C0305','速冻食品',22203],['C0306','海鲜水产品',7748]]],
+['C04','家居用品',1101628,0,[['C0401','美容洗护',269485],['C0402','纸品湿巾',79448],['C0403','女性护理',49825],['C0404','衣物清洁护理',45298],['C0405','家庭清洁',78437],['C0406','清洁用具',31591],['C0407','厨具用品',134632],['C0408','家用小电器',102325],['C0409','生活日用品',310587]]],
+['C05','母婴玩具',232275,0,[['C0501','孕婴奶粉',7512],['C0502','孕婴食品',9433],['C0503','尿裤/湿巾/护理垫',22733],['C0504','孕婴用品',24639],['C0505','玩具',167958]]],
+['C06','文具礼品',543775,0,[['C0601','学生文具',415396],['C0602','文化礼品',58063],['C0603','办公用品',70316]]],
+['C07','卷烟',7129,0,[['C0700','烟具配件',4191],['C0701','红塔山',48],['C0702','云烟',312],['C0703','中华',34],['C0704','芙蓉王',33],['C0705','黄鹤楼',160],['C0706','贵烟',67],['C0707','泰山',190],['C0708','长白山',49],['C0709','苏烟',24],['C0710','利群',83],['C0711','真龙',46],['C0712','黄山',91],['C0713','七匹狼',71],['C0714','金圣',57],['C0715','钻石',86],['C0716','黄金叶',106],['C0717','双喜',80],['C0718','娇子',86],['C0719','白沙',51],['C0720','黄果树',17],['C0721','兰州',25],['C0722','南京',69],['C0723','玉溪',67],['C0724','红金龙',39],['C0725','万宝路',33],['C0726','天子',23],['C0727','长城',72],['C0728','中南海',47],['C0729','好猫',31],['C0730','牡丹',22],['C0731','红河',39],['C0732','人民大会堂',20],['C0733','龙凤呈祥',24],['C0734','茂大',8],['C0735','建牌',33],['C0736','古田',4],['C0737','爱喜',24],['C0738','熊猫',11],['C0739','冬虫夏草',20],['C0740','哈尔滨',24],['C0741','王冠',60],['C0742','将军',52],['C0743','延安',21],['C0744','恒大',8],['C0745','凤凰',2],['C0746','狮牌',10],['C0747','红旗渠',20],['C0748','大卫杜夫',18],['C0749','长寿',6],['C0750','钓鱼台',6],['C0751','哈德门',12],['C0752','大前门',5],['C0753','都宝',37],['C0754','庐山',15],['C0755','紫气东来',6],['C0756','猴王',6],['C0757','七星',29],['C0758','三峡',4],['C0759','三沙',2],['C0760','优民',5],['C0761','呼伦贝尔',4],['C0762','土楼',2],['C0763','壹枝笔',7],['C0764','天下秀',7],['C0765','威斯',2],['C0766','宏声',4],['C0767','宝亨',6],['C0768','宝岛',6],['C0769','工字',2],['C0770','帕特加',2],['C0771','彼亚赛',2],['C0772','散花',2],['C0773','新石家庄',2],['C0774','林海灵芝',14],['C0775','石狮',4],['C0776','红三环',12],['C0777','红双喜',53],['C0778','红梅',12],['C0779','罗密欧',10],['C0780','蒙特',11],['C0781','蒙特利',2],['C0782','金桥',20],['C0783','雄狮',7],['C0784','顺百利',3],['C0785','骆驼',6],['C0786','高希霸',9],['C0787','龙烟',6],['C0788','555',40],['C0789','黄山松',4],['C0790','麦克纽杜',2],['C0791','千里达',1],['C0792','潮牌',0],['C0793','君特欧',1],['C0794','奥赛码头',1],['C0795','富恩特',3],['C0796','卡里罗',5],['C0797','芙蓉后',1],['C0798','唐若丝',0],['C0799','比德奥',4],['C07100','拉·加莱拉',4],['C07101','奥斯卡',2],['C07102','帕拉森',3]]],
+['C08','虚拟物品',0,0,[['C0801','认购权',0]]],
+['C09','饮料',237324,0,[['C0901','牛奶乳品',55821],['C0902','饮料',97270],['C0903','茶',44855],['C0904','冲调保健',39378]]],
+['C10','服饰纺织',265961,0,[['C1001','服饰鞋帽',218012],['C1002','家居纺织',45939],['C1003','箱包袋类',2010]]],
+['C11','数码五金',58851,0,[['C1101','数码配件',41284],['C1102','五金清洁工具',17567]]],
+['C12','健康用品',6208,0,[['C1201','保健食品',6208]]]
+];
+/* 演示商品（真实库条目）：键为分类编码 */
+const GOODS={
+ 'ALL':[['6901035623162','青岛啤酒经典1903-9度258毫升*6*4复古装箱啤','啤酒','¥220.00','在售'],['6901035621144','青岛啤酒经典10度500毫升*12工行定制罐啤','啤酒','<span class="zero">价格待补</span>','在售'],['6901180953213','早餐饼干','饼干糕点','¥10.00','在售'],['6901180950380','443g果乐果香凤梨味果酱夹心饼干','饼干糕点','¥17.80','在售'],['9787534296482','2047瞎了眼的灯塔','<span class="tag tg-gray">未分类</span>','—','在售']],
+ 'C01':[['6901180953213','早餐饼干','饼干糕点','¥10.00','在售'],['6901180950380','443g果乐果香凤梨味果酱夹心饼干','饼干糕点','¥17.80','在售']],
+ 'C0103':[['6901180953213','早餐饼干','饼干糕点','¥10.00','在售'],['6901180950380','443g果乐果香凤梨味果酱夹心饼干','饼干糕点','¥17.80','在售']],
+ 'C02':[['6901035623162','青岛啤酒经典1903-9度258毫升*6*4复古装箱啤','啤酒','¥220.00','在售'],['6901035621144','青岛啤酒经典10度500毫升*12工行定制罐啤','啤酒','<span class="zero">价格待补</span>','在售']],
+ 'C0203':[['6901035623162','青岛啤酒经典1903-9度258毫升*6*4复古装箱啤','啤酒','¥220.00','在售'],['6901035621144','青岛啤酒经典10度500毫升*12工行定制罐啤','啤酒','<span class="zero">价格待补</span>','在售']],
+ 'C00':[['9787534296482','2047瞎了眼的灯塔','<span class="tag tg-gray">未分类</span>','—','在售']]
+};
+const TOTAL=4325381;
+const fmt=n=>n.toLocaleString('en-US');
+/* ===== 商品档案：构建分类树 ===== */
+function buildTree(){let h='<div class="node sel" data-cat="ALL" data-name="全部分类" data-count="'+TOTAL+'" data-path="全部分类" onclick="pickCat(this)"><b>全部分类</b><span class="cnt">'+fmt(TOTAL)+'</span></div>';
+CATS.forEach(c=>{h+='<div class="node" data-cat="'+c[0]+'" data-name="'+c[1]+'" data-count="'+c[2]+'" data-path="'+c[1]+'" onclick="pickCat(this)"><span class="caret" onclick="tg(event,this)">▾</span><b>'+c[1]+'</b><span class="cnt">'+fmt(c[2])+'</span></div>';
+h+='<div class="children'+(c[3]?'':' hide')+'">';
+c[4].forEach(s=>{h+='<div class="node" data-cat="'+s[0]+'" data-name="'+s[1]+'" data-count="'+s[2]+'" data-path="'+c[1]+' / '+s[1]+'" onclick="pickCat(this)">'+s[1]+'<span class="cnt">'+fmt(s[2])+'</span></div>';});
+h+='</div>';});
+h+='<div class="node c00" data-cat="C00" data-name="未分类" data-count="197059" data-path="未分类" onclick="pickCat(this)" title="系统占位分类：治理流程归属地，不能往里新增商品"><span class="caret">▪</span>未分类<span class="ph">占位</span><span class="cnt">197,059</span></div>';
+document.getElementById('gctree').innerHTML=h;}
+/* 展开/折叠 */
+function tg(e,el){e.stopPropagation();const ch=el.parentElement.nextElementSibling;if(!ch||!ch.classList.contains('children'))return;
+const open=ch.classList.toggle('hide');el.textContent=open?'▸':'▾';}
+/* 选中分类 → 右表联动 */
+function pickCat(el){document.querySelectorAll('#gctree .node').forEach(n=>n.classList.remove('sel'));el.classList.add('sel');
+const d=el.dataset;
+document.getElementById('gl-path').textContent=d.path;
+document.getElementById('gl-count').textContent=fmt(+d.count);
+renderGoods(d.cat);}
+/* 渲染右侧商品 */
+function renderGoods(cat){const tb=document.getElementById('gl-tbody');const rows=GOODS[cat];
+if(rows&&rows.length){tb.innerHTML=rows.map(r=>'<tr onclick="showDetail()"><td style="font-family:Menlo">'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td><span class="tag tg-green">'+r[4]+'</span></td><td><a style="color:var(--primary)">详情</a></td></tr>').join('');}
+else{tb.innerHTML='<tr class="empty-row"><td colspan="6">该分类商品较多，输入条码或商品名称快速定位<br><span style="font-size:11px">（原型仅内置部分示例数据）</span></td></tr>';}
+document.getElementById('gl-pager').innerHTML='共 '+document.getElementById('gl-count').textContent+' 条 · 建议用搜索定位<button>‹</button><button class="cur">1</button><button>2</button><button>3</button><button>…</button><button>›</button>';}
+/* 分类搜索过滤 */
+function filterTree(q){q=q.trim();
+if(!q){buildTree();renderGoods('ALL');document.getElementById('gl-path').textContent='全部分类';document.getElementById('gl-count').textContent=fmt(TOTAL);return;}
+document.querySelectorAll('#gctree .node').forEach(n=>{n.style.display=(!q||n.dataset.name.includes(q))?'':'none';});
+document.querySelectorAll('#gctree .children').forEach(c=>c.classList.remove('hide'));
+document.querySelectorAll('#gctree .caret').forEach(c=>{if(c.textContent) c.textContent='▾';});}
+/* ================= 用户管理（专业版） ================= */
+const USERS=[
+ {account:'zhang.san',name:'张三',role:'录入员',status:'启用',dept:'商品部',phone:'138****5678',last:'今天 08:55',created:'2026-09-12',logs:[['今天 08:55','登录系统'],['昨天 16:40','新增商品「早餐饼干」'],['昨天 15:02','补售价 17.80']]},
+ {account:'li.si',name:'李四',role:'管理员',status:'启用',dept:'商品部',phone:'139****1234',last:'今天 09:02',created:'2026-08-01',logs:[['今天 09:20','调整「啤酒」属性模板'],['今天 09:02','登录系统'],['2026-11-22','批准 2 条换码登记']]},
+ {account:'wang.wu',name:'王五',role:'只读',status:'启用',dept:'财务部',phone:'137****9012',last:'昨天 17:31',created:'2026-10-05',logs:[['昨天 17:31','登录系统'],['昨天 17:32','导出商品清单']]},
+ {account:'zhao.liu',name:'赵六',role:'录入员',status:'停用',dept:'商品部',phone:'136****6666',last:'2026-11-10',created:'2026-07-18',logs:[['2026-11-10','账号被停用'],['2026-11-10','登录系统']]}
+];
+const ROLE_TAG={'录入员':'tg-blue','管理员':'tg-violet','只读':'tg-gray'};
+const ROLE_DOT={'录入员':'#409eff','管理员':'#7c3aed','只读':'#909399'};
+const ROLE_PERM={
+ '录入员':['查看商品、按分类浏览、扫码查询','新增商品、修改名称/价格/属性'],
+ '管理员':['查看商品、按分类浏览、扫码查询','新增商品、修改名称/价格/属性','停用商品','作废商品（不可逆）','分类、属性模板、条码、字典','用户管理（新增/停用/改角色）','导出数据'],
+ '只读':['查看商品、按分类浏览、扫码查询','导出数据']
+};
+let editAccount=null;
+function findUser(a){return USERS.find(u=>u.account===a);}
+function renderUsers(){
+  const q=(document.getElementById('u-q').value||'').trim();
+  const role=document.getElementById('u-role').value;
+  const status=document.getElementById('u-status').value;
+  const list=USERS.filter(u=>(!q||u.account.includes(q)||u.name.includes(q))&&(!role||u.role===role)&&(!status||u.status===status));
+  document.getElementById('u-tbody').innerHTML=list.map(u=>
+    '<tr class="'+(u.status==='停用'?'row-disabled':'')+'" onclick="openDrawer(\''+u.account+'\')">'+
+    '<td style="font-family:Menlo">'+u.account+'</td><td>'+u.name+'</td>'+
+    '<td><div class="role-cell"><span class="role-dot" style="background:'+ROLE_DOT[u.role]+'"></span><span class="tag '+ROLE_TAG[u.role]+'">'+u.role+'</span></div></td>'+
+    '<td><span class="tag '+(u.status==='启用'?'tg-green':'tg-gray')+'">'+u.status+'</span></td>'+
+    '<td>'+u.last+'</td>'+
+    '<td><span class="op" onclick="event.stopPropagation();openDrawer(\''+u.account+'\')">查看</span>'+
+    '<span class="op" onclick="event.stopPropagation();openUserForm(\''+u.account+'\')">编辑</span></td></tr>').join('')||
+    '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:30px">没有符合条件的用户，换个条件试试</td></tr>';
+  document.getElementById('u-result').textContent='显示 '+list.length+' / '+USERS.length+' 人';
+  document.getElementById('us-all').textContent=USERS.length;
+  document.getElementById('us-on').textContent=USERS.filter(u=>u.status==='启用').length;
+  document.getElementById('us-adm').textContent=USERS.filter(u=>u.role==='管理员'&&u.status==='启用').length;
+  document.getElementById('us-off').textContent=USERS.filter(u=>u.status==='停用').length;
+}
+function openDrawer(account){
+  const u=findUser(account);if(!u)return;
+  document.getElementById('ud-name').textContent=u.name;
+  document.getElementById('ud-account').textContent='账号 '+u.account+' · '+u.dept;
+  let h='<div class="dsec"><h4>基本信息</h4>'+
+    '<div class="drow"><span class="k">账号</span><span class="v" style="font-family:Menlo">'+u.account+'</span></div>'+
+    '<div class="drow"><span class="k">姓名</span><span class="v">'+u.name+'</span></div>'+
+    '<div class="drow"><span class="k">角色</span><span class="v"><span class="tag '+ROLE_TAG[u.role]+'">'+u.role+'</span></span></div>'+
+    '<div class="drow"><span class="k">状态</span><span class="v"><span class="tag '+(u.status==='启用'?'tg-green':'tg-gray')+'">'+u.status+'</span></span></div>'+
+    '<div class="drow"><span class="k">所属部门</span><span class="v">'+u.dept+'</span></div>'+
+    '<div class="drow"><span class="k">手机号</span><span class="v">'+u.phone+'</span></div>'+
+    '<div class="drow"><span class="k">创建时间</span><span class="v">'+u.created+'</span></div>'+
+    '<div class="drow"><span class="k">最近登录</span><span class="v">'+u.last+'</span></div></div>';
+  h+='<div class="dsec"><h4>这个角色能做什么（'+u.role+'）</h4>'+ROLE_PERM[u.role].map(p=>'<div class="pline"><span class="pyes">✓</span>'+p+'</div>').join('')+'</div>';
+  h+='<div class="dsec"><h4>最近活动</h4>'+u.logs.map(l=>'<div class="drow"><span class="k" style="width:98px">'+l[0]+'</span><span class="v">'+l[1]+'</span></div>').join('')+'</div>';
+  document.getElementById('ud-body').innerHTML=h;
+  document.getElementById('ud-foot').innerHTML=
+    '<button class="btn plain sm" onclick="resetPwd(\''+u.account+'\')">重置密码</button>'+
+    '<button class="btn plain sm" onclick="closeDrawer();openUserForm(\''+u.account+'\')">编辑资料</button>'+
+    (u.status==='启用'
+      ?'<button class="btn warn sm" onclick="toggleStatus(\''+u.account+'\')">停用账号</button>'
+      :'<button class="btn sm" onclick="toggleStatus(\''+u.account+'\')">恢复使用</button>');
+  document.getElementById('u-drawer-mask').style.display='block';
+  document.getElementById('u-drawer').classList.add('open');
+}
+function closeDrawer(){document.getElementById('u-drawer-mask').style.display='none';document.getElementById('u-drawer').classList.remove('open');}
+function openUserForm(account){
+  editAccount=account||null;
+  const u=account?findUser(account):null;
+  document.getElementById('uf-title').textContent=u?'编辑用户 · '+u.name:'新增用户';
+  document.getElementById('uf-account').value=u?u.account:'';
+  document.getElementById('uf-account').disabled=!!u;
+  document.getElementById('uf-acc-hint').textContent=u?'账号创建后不能修改':'用姓名拼音，全系统唯一';
+  document.getElementById('uf-name').value=u?u.name:'';
+  document.getElementById('uf-role').value=u?u.role:'录入员';
+  document.getElementById('uf-dept').value=u?u.dept:'';
+  document.getElementById('uf-phone').value=u?u.phone:'';
+  document.getElementById('uf-status').value=u?u.status:'启用';
+  document.getElementById('uf-tip').textContent=u?'修改角色立即生效；改动会记录到系统操作日志':'保存后生成初始密码，首次登录强制修改；改动会记录到系统操作日志';
+  document.getElementById('uf-mask').style.display='flex';
+}
+function closeUserForm(){document.getElementById('uf-mask').style.display='none';}
+function saveUser(){
+  const acc=document.getElementById('uf-account').value.trim();
+  const name=document.getElementById('uf-name').value.trim();
+  const role=document.getElementById('uf-role').value;
+  const dept=document.getElementById('uf-dept').value.trim()||'—';
+  const phone=document.getElementById('uf-phone').value.trim()||'—';
+  const status=document.getElementById('uf-status').value;
+  if(!acc||!name){toast('账号和姓名是必填项');return;}
+  if(editAccount){
+    const u=findUser(editAccount);u.name=name;u.role=role;u.dept=dept;u.phone=phone;u.status=status;
+    toast('已保存「'+name+'」的修改 · 改动已记录');
+  }else{
+    if(findUser(acc)){toast('账号「'+acc+'」已存在，请换一个');return;}
+    USERS.push({account:acc,name:name,role:role,status:status,dept:dept,phone:phone,last:'从未登录',created:'2026-11-23',logs:[['2026-11-23','账号创建']]});
+    toast('已创建账号「'+acc+'」· 初始密码已生成，首次登录需修改');
+  }
+  closeUserForm();renderUsers();
+}
+function toggleStatus(account){
+  const u=findUser(account);if(!u)return;
+  const was=u.status;
+  confirmDlg(was==='启用'?'停用「'+u.name+'」的账号？':'恢复「'+u.name+'」的使用？',
+    was==='启用'?'停用后该账号立即不能登录，历史操作记录全部保留，可随时恢复。':'恢复后该账号可以正常登录，权限不变。',
+    ()=>{u.status=was==='启用'?'停用':'启用';u.logs.unshift(['2026-11-23',was==='启用'?'账号被停用':'账号恢复使用']);
+      closeDrawer();renderUsers();toast('已'+(was==='启用'?'停用':'恢复')+'「'+u.name+'」的账号');});
+}
+function resetPwd(account){
+  const u=findUser(account);if(!u)return;
+  confirmDlg('重置「'+u.name+'」的密码？','生成新的初始密码，该账号下次登录时会被要求修改。原密码立即失效。',
+    ()=>{u.logs.unshift(['2026-11-23','密码被重置']);toast('已重置密码 · 新初始密码已生成');openDrawer(account);});
+}
+/* ===== 导航 ===== */
+function go(el){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));el.classList.add('active');
+const s=el.dataset.s;document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+const map={'home':'s-home','goods-list':'s-goods-list','goods-new':'s-goods-new','category':'s-category','barcode':'s-barcode','dict':'s-dict','govern':'s-govern','users':'s-users'};
+document.getElementById(map[s]).classList.add('active');
+const g=el.closest('.nav-group').querySelector('.gt').textContent;
+document.getElementById('crumb').innerHTML=g+' / <b>'+el.textContent.replace('管理员','').trim()+'</b>';
+if(s==='goods-new'){document.getElementById('nb').focus();}
+if(s==='users'){renderUsers();}}
+function goFillPrice(){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-fillprice').classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('crumb').innerHTML='商品工作台 / <b>价格待补清单</b>';}
+function showDetail(){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-goods-detail').classList.add('active');document.getElementById('crumb').innerHTML='商品工作台 / <b>商品详情 · 青岛啤酒经典1903</b>';}
+function tab(el,p){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.tab-pane').forEach(t=>t.classList.remove('active'));document.getElementById(p).classList.add('active');}
+function selCat(el){document.querySelectorAll('.tree .node').forEach(n=>n.classList.remove('sel'));el.classList.add('sel');}
+/* ===== 扫码直达 ===== */
+function scanGo(){const v=document.getElementById('scanbox').value.trim();
+if(!v){toast('先扫码或输入条码');return;}
+if(v==='6901035623162'){toast('✓ 找到商品：青岛啤酒经典1903…装箱啤');showDetail();}
+else if(v==='9787534296482'){toast('✓ 找到：《2047瞎了眼的灯塔》· 暂未分类（原型仅演示啤酒详情页）');}
+else{toast('库里没有这个条码 —— 已自动进入建档，条码已带入 ⚡');const nb=document.getElementById('nb');nb.value=v;go(document.querySelector('[data-s=goods-new]'));setTimeout(doCheck,200);}}
+/* ===== 新增：自动查重 + 连续建档 ===== */
+function doCheck(){const bc=document.getElementById('nb').value.trim();const r=document.getElementById('check-result');let html='';
+if(!bc){toast('先扫码或输入条码');return;}
+if(bc==='6901035623162'){html='<div style="background:#fef0f0;border:1px solid #fde2e2;border-radius:6px;padding:12px 14px;font-size:12.5px;color:#a15555"><b>✗ 该条码已有商品</b><br>6901035623162 已存在：<b>青岛啤酒经典1903…装箱啤</b>（啤酒，在售）。不能重复建档。试试 6931234567890</div>';document.getElementById('next-step').style.display='none';}
+else if(bc.startsWith('978')||bc.startsWith('979')){html='<div style="background:#fdf6ec;border:1px solid #faecd8;border-radius:6px;padding:12px 14px;font-size:12.5px;color:#8a6d3b"><b>⚠ 这是书号，不是商品条码</b><br>978/979 开头的是书籍编号。如需收录书籍类商品，请联系管理员扩充分类。</div>';document.getElementById('next-step').style.display='none';}
+else{html='<div style="background:#f0f9eb;border:1px solid #e1f3d8;border-radius:6px;padding:12px 14px;font-size:12.5px;color:#4a7a2a">✓ 条码可用（格式正确、无重复、无使用限制）</div>';document.getElementById('next-step').style.display='block';}
+r.innerHTML=html;}
+function saveNew(again){const nm=document.getElementById('nf-name').value||'（未填名称）';
+if(again){toast('已保存「'+nm+'」· 请扫下一个条码 ⚡');
+document.getElementById('nb').value='';document.getElementById('nf-name').value='';
+document.getElementById('check-result').innerHTML='';document.getElementById('next-step').style.display='none';
+document.querySelectorAll('#s-goods-new .dyn-form input').forEach(i=>{if(i.id!=='nf-name')i.value='';});
+document.querySelectorAll('#s-goods-new .dyn-form select').forEach(s=>s.selectedIndex=0);
+document.getElementById('nb').focus();}
+else{toast('建档成功 · 商品已保存，后续可随时修改');}}
+/* ===== 详情字段即点即改 ===== */
+function editField(el,label){if(el.querySelector('input'))return;
+const old=el.textContent.replace('¥','').trim();
+const inp=document.createElement('input');inp.className='inline-input';inp.value=old;
+el.textContent='';el.appendChild(inp);inp.focus();inp.select();
+inp.onkeydown=function(e){if(e.key==='Enter'){const nv=inp.value.trim()||old;
+el.textContent=(label==='售价'||label==='进价'?'¥ '+nv:nv);
+toast('已保存：'+label+' 改为 '+(label==='售价'||label==='进价'?'¥'+nv:nv)+' · 改动已记录到历史');}
+if(e.key==='Escape'){el.textContent=(label==='售价'||label==='进价'?'¥ ':'')+old;}};}
+/* ===== 角色切换（原型演示权限差异） ===== */
+function switchRole(sel){const isAdmin=sel.value==='adm';document.body.classList.toggle('admin',isAdmin);
+document.getElementById('roleTag').textContent=isAdmin?'管理员':'录入员';
+toast(isAdmin?'已切换为管理员视角：作废按钮、管理后台菜单可见':'已切换为录入员视角：高危操作已隐藏');}
+/* ===== 确认对话框 ===== */
+let dlgAction='';
+function confirmDlg(title,msg,done){document.getElementById('dlg-title').textContent=title;
+document.getElementById('dlg-msg').textContent=msg;dlgAction=done;
+document.getElementById('dlg-mask').style.display='flex';}
+function closeDlg(){document.getElementById('dlg-mask').style.display='none';}
+function doConfirm(){closeDlg();if(typeof dlgAction==='function'){dlgAction();}else{toast(dlgAction);}}
+/* ===== 补价 ===== */
+let fpLeft=537;
+function fillPrice(n){const v=document.getElementById('fpv'+n).value.trim();
+if(!v){toast('先填一个价格再保存');return;}
+const row=document.getElementById('fp'+n);
+row.innerHTML='<td style="font-family:Menlo">'+row.cells[0].textContent+'</td><td>'+row.cells[1].textContent+'</td><td>¥ '+v+'</td><td><span class="tag tg-green">✓ 已补</span></td><td><span style="color:var(--text3);font-size:11px">今天 · 已记录</span></td>';
+fpLeft--;document.getElementById('fp-count').textContent=fpLeft.toLocaleString();
+toast('已保存售价 ¥'+v+' · 剩余 '+fpLeft.toLocaleString()+' 条待补');}
+function enterApp(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';buildTree();renderGoods('ALL');renderUsers();setTimeout(()=>{const s=document.getElementById('scanbox');if(s)s.focus();},50);}
+let t;function toast(m){const e=document.getElementById('toast');e.textContent=m;e.style.display='block';clearTimeout(t);t=setTimeout(()=>e.style.display='none',3400);}
+</script>
+</body>
+</html>

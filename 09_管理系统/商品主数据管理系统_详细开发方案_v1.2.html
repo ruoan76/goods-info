@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>商品主数据管理系统 · 详细开发方案 v1.2（复审快修版）</title>
+<style>
+:root{--ink:#1f2937;--sub:#4b5563;--mut:#6b7280;--line:#e5e7eb;--bg:#f6f8fb;--card:#fff;--pri:#2563eb;--red:#dc2626;--amb:#d97706;--grn:#059669;--vio:#7c3aed;--cy:#0891b2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.72}
+.wrap{max-width:1220px;margin:0 auto;padding:26px 32px 64px}
+.hero{background:linear-gradient(135deg,#1e3a8a,#2563eb 65%,#0891b2);color:#fff;border-radius:14px;padding:30px 34px;margin-bottom:20px}
+.hero h1{margin:0 0 8px;font-size:27px}
+.hero .meta{font-size:13px;opacity:.9}
+.hero .meta b{opacity:1}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:20px}
+.kpi{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:11px 12px}
+.kpi .n{font-size:21px;font-weight:700;line-height:1.2}.kpi .l{font-size:11px;opacity:.85;margin-top:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 26px;margin-bottom:18px}
+h2{font-size:18px;margin:0 0 14px;padding-left:11px;border-left:4px solid var(--pri);line-height:1.3}
+h3{font-size:15px;margin:20px 0 9px;color:#1e3a8a}
+h4{font-size:13.5px;margin:14px 0 6px;color:#334155}
+p{margin:8px 0}
+table{width:100%;border-collapse:collapse;font-size:12.6px;margin:10px 0}
+th{background:#f1f5f9;text-align:left;padding:8px 10px;border:1px solid var(--line);font-weight:600;color:#334155;white-space:nowrap}
+td{padding:7px 10px;border:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:#fcfdfe}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;background:#eef2ff;color:#4338ca;padding:1px 5px;border-radius:4px;font-size:11.7px}
+pre{background:#1d2535;color:#c6d4f0;border-radius:7px;padding:13px 16px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.65;overflow-x:auto;margin:10px 0}
+.tag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap}
+.t-blue{background:#dbeafe;color:#1d4ed8}.t-grn{background:#d1fae5;color:#047857}.t-amb{background:#fef3c7;color:#b45309}.t-red{background:#fee2e2;color:#b91c1c}.t-vio{background:#ede9fe;color:#6d28d9}.t-cy{background:#cffafe;color:#0e7490}
+.note{background:#eff6ff;border-left:4px solid var(--pri);padding:11px 15px;border-radius:6px;font-size:13px;margin:12px 0}
+.warn{background:#fff7ed;border-left:4px solid var(--amb);padding:11px 15px;border-radius:6px;font-size:13px;margin:12px 0}
+.good{background:#ecfdf5;border-left:4px solid var(--grn);padding:11px 15px;border-radius:6px;font-size:13px;margin:12px 0}
+.danger{background:#fef2f2;border-left:4px solid var(--red);padding:11px 15px;border-radius:6px;font-size:13px;margin:12px 0}
+ul,ol{margin:6px 0;padding-left:22px}li{margin:4px 0}
+.mini{font-size:12px;color:var(--mut)}
+.mile{border:1px solid var(--line);border-radius:8px;padding:13px 17px;margin:10px 0;background:#fff}
+.mile .hd{font-weight:700;font-size:14px;color:#1e3a8a;margin-bottom:6px}
+.mile .meta{font-size:12px;color:var(--mut);margin-bottom:7px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.box{background:#f8fafc;border:1px solid var(--line);border-radius:7px;padding:12px 14px}
+.box b{color:#1e3a8a}
+.footer{text-align:center;color:var(--mut);font-size:12px;margin-top:26px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+  <h1>商品主数据管理系统 · 详细开发方案</h1>
+  <div class="meta">版本 <b>v1.2（复审快修版 · 开工基线）</b>　|　编制 <b>2026-11-23</b>　|　基线：<b>前端原型 v1.8</b> × <b>接口方案 v1.2（40 端点）</b> × <b>架构方案 v1.1</b> × <b>方案二 v3.5</b></div>
+  <div class="kpis">
+    <div class="kpi"><div class="n">13</div><div class="l">开发日 D1~D13</div></div>
+    <div class="kpi"><div class="n">40</div><div class="l">HTTP 端点</div></div>
+    <div class="kpi"><div class="n">5</div><div class="l">待迁移新表</div></div>
+    <div class="kpi"><div class="n">4</div><div class="l">铁律守卫</div></div>
+    <div class="kpi"><div class="n">3</div><div class="l">角色档位</div></div>
+    <div class="kpi"><div class="n">432万</div><div class="l">主档数据量</div></div>
+  </div>
+</div>
+
+<div class="card">
+<h2>0. 方案定位与事实基线</h2>
+<p>本方案把已完成评审的<b>设计成果</b>转成<b>可排期、可执行、可验收</b>的开发任务。所有技术参数均取自远程环境与实库实测，不推测。</p>
+<table>
+<tr><th style="width:150px">基线文档</th><th>作用</th><th>状态</th></tr>
+<tr><td>方案二 v3.5</td><td>业务边界：管理维护系统，治理裁决/扫码校准/门店上报属附录 B 演进项</td><td><span class="tag t-grn">定稿</span></td></tr>
+<tr><td>架构方案 v1.1</td><td>6 项技术裁决、离线桥、D1~D13 阶段划分、目录结构</td><td><span class="tag t-grn">定稿</span></td></tr>
+<tr><td>接口方案 v1.2</td><td><b>40 端点</b>完整契约（路径/权限/字段/错误码/DB 映射），联合评审 9 项已闭环</td><td><span class="tag t-grn">定稿</span></td></tr>
+<tr><td>前端原型 v1.8</td><td>10 个页面、20 处空壳按钮已实接、三档角色守卫、数据保真对账</td><td><span class="tag t-grn">定稿</span></td></tr>
+</table>
+<div class="warn"><b>口径差异必须显式处理：</b>架构方案 v1.1 写「约 23 个端点」，接口方案 v1.2 展开为 <b>40 个</b>（GET 18 / POST 15 / PUT·PATCH 7，方法分布从 OpenAPI 反推）。开发排期以 <b>40</b> 为准；其中 9 个为新增（4 个前端 v1.7 驱动 + 5 个联合评审驱动）、2 个为架构原有补列。需回写架构 v1.2 备案，但<b>不推翻任何架构裁决</b>。</div>
+<div class="note"><b>v1.0 → v1.1 变更记录（详细开发方案评审修订，10 项全修）：</b><br>
+<b>P0</b> ① nginx 最小站点前移 D1（D1 即可验 :8090 静态可见，D11 只补反代）；② 登出黑名单/失败锁由内存改为落库（<code>sys_user.token_version / failed_attempts / locked_until</code>，适配 2 worker，不引 Redis）。<br>
+<b>P1</b> ③ 方法分布 16/6 → 15/7；④ D5 拆分"goods 剩余 4"→6（三天 7+19+14=40 对账）；⑤ 角色用枚举不建 <code>sys_role</code> 表（保持 5 张，与接口 v1.2 一致）；⑥ 新增 §5.2「19 项功能→端点→验收」映射表，D13 引用改正；⑦ 回滚演练明确用 DBA 账号（goods_app 实测 <code>rolcreatedb=f</code>）。<br>
+<b>P2</b> ⑧ wheel 数量改以 lock 解析为准（≥19）；⑨ 两类恢复演练区分（D1 可撤销 / D11 灾备 RTO）；⑩ 8090/8000 端口与 dist root 写死、m1 末尾 <code>REVOKE CREATE</code> 收权。</div>
+<div class="good"><b>v1.1 → v1.2 变更记录（复审 4 项定点快修，无设计变更）：</b><br>
+① <b>§5.2 映射表 2 个端点纠正</b>：<code>GET /barcodes/validate</code> → <code>POST /barcodes/validate</code>；<code>GET/POST/PUT /admin/users</code> → <code>GET/POST /admin/users</code> + <code>PUT /admin/users/{account}</code>；并在 §5.1 增加"端点从 OpenAPI 自动提取，禁止手抄"约束。<br>
+② <b>稳定 5 表口径</b>：删除 P0-2 中"可选写 <code>sys_token_blacklist</code>"整句，登出只保留 <code>token_version</code> 递增方案，建表数恒为 5。<br>
+③ <b>架构差异备案</b>：明确标注本节修正架构 v1.1 §安全设计的"内存黑名单"方案（2 worker 多进程下不适用），改 <code>token_version</code> 落库，<b>列入回写架构 v1.2 备案清单；架构 6 项裁决本身不变</b>。<br>
+④ <b>nginx 命令修正</b>：<code>\$uri</code> → <code>$uri</code>（HTML 文档内无需转义）。<br>
+以上均为文档层定点修正，机器上复核端点与命令后即可作为 D1~D13 开工基线，无需再走全量评审。</div>
+
+<h3>0.1 远程环境实测（2026-11-23 20:50）</h3>
+<table>
+<tr><th>项</th><th>实测值</th><th>对开发的影响</th></tr>
+<tr><td>Python</td><td>3.10.12 / pip 22.0.2</td><td>wheel 必须选 <code>cp310-manylinux2014</code>，与本地 Mac Python 3.13 <b>不兼容</b>，不可直接 scp 本地包</td></tr>
+<tr><td>已装 Python 包</td><td>仅 <code>psycopg2 2.9.2</code></td><td>FastAPI / uvicorn / pydantic / pyjwt / pytest <b>全部需经离线桥安装</b></td></tr>
+<tr><td>Node / npm</td><td>v22.23.3 / 10.9.9</td><td>服务器 Node 可用，但架构裁决③要求依赖只走离线桥 → 前端在 Mac 构建后 scp dist</td></tr>
+<tr><td>离线 wheel</td><td>本地 Mac <code>/tmp/wheeltest/</code> 17 个齐全；远程 <code>/tmp/wheeltest</code> 已空</td><td>D1 需补齐 <code>gunicorn</code> + <code>pyjwt</code> 两个 wheel（Mac 外网实测可达 pypi 200），再整批 scp</td></tr>
+<tr><td>PostgreSQL</td><td>14.23 / goods_mdm / goods_app</td><td>实库 17 张表（含 3 视图）；5 张目标表需 m1 新建</td></tr>
+<tr><td>项目目录</td><td><code>/data/projects/goods-info/</code> · <code>09_管理系统/prototype/</code> 仅 HTML</td><td>无 backend/frontend 代码目录，D1 从零创建</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2>1. 技术栈与部署形态</h2>
+<div class="grid2">
+<div class="box"><b>后端</b>
+<ul>
+<li>FastAPI 0.162.5 + pydantic 2.14.4 + uvicorn 0.54</li>
+<li>gunicorn（UvicornWorker 进程托管）+ pyjwt（HS256 JWT，8h）</li>
+<li>psycopg2 连接池，双账号 <code>goods_app</code>（读写）/ <code>goods_ro</code>（隔离区只读）</li>
+<li>密码 PBKDF2；不引 Redis/MQ/容器</li>
+</ul></div>
+<div class="box"><b>前端</b>
+<ul>
+<li>Vue3 + Element Plus + Pinia + vue-router</li>
+<li>Vite 在 Mac 构建，<code>dist</code> 为唯一发布物</li>
+<li>API 统一封装 <code>api/client.js</code>（fetch + JWT 头 + 业务码），组件禁止裸 fetch</li>
+<li>不引 SSR / 微前端 / 代码生成器</li>
+</ul></div>
+</div>
+<pre>浏览器 → nginx :8090 ─┬─ /            → Vue3 dist（try_files SPA 回退）
+                      └─ /api/v1      → 反代 FastAPI（gunicorn + UvicornWorker）
+                                          ├─ routers/ 5 域 40 端点
+                                          ├─ services/ 业务 + ironrules 铁律守卫
+                                          ├─ daos/     SQL 集中，双账号连接池
+                                          └─ core/     auth(JWT) · audit(留痕) · errors
+                                                          ↓
+                                                  PostgreSQL 14 · goods_mdm</pre>
+<div class="note"><b>6 项架构裁决（维持不变）</b>：① 后端单体不拆微服务 ② 前端 Vue3 SPA ③ 依赖只走离线桥、服务器零直连 ④ 不引 Redis/MQ/容器 ⑤ 双账号 + JWT 三角色 ⑥ 监控从简。<b>推翻任一项须走方案评审。</b></div>
+<h3>1.1 三条桥接通道（沿用既有验证结论）</h3>
+<table>
+<tr><th>通道</th><th>方向</th><th>用途</th><th>命令要点</th></tr>
+<tr><td><b>① wheel 桥</b></td><td>Mac 下载 → scp → 远程 venv 离线装</td><td>Python 依赖（D1 补 gunicorn/pyjwt）</td><td><code>pip download --platform manylinux2014_x86_64 --python-version 310 --only-binary=:all: -d wheels/</code></td></tr>
+<tr><td><b>② 构建桥</b></td><td>Mac <code>npm ci && npm run build</code> → scp dist</td><td>前端发布（每日多次）</td><td><code>scp -r dist/* ubuntu-vm:/data/.../frontend/dist/</code>，nginx 无需 reload</td></tr>
+<tr><td><b>③ 源码桥</b></td><td>rsync over SSH 增量</td><td>后端源码日常同步</td><td><code>rsync -av --exclude='__pycache__' ./ ubuntu-vm:/data/.../backend/</code></td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2>2. 项目目录结构（D1 创建）</h2>
+<pre>/data/projects/goods-info/09_管理系统/
+├── backend/
+│   ├── app/
+│   │   ├── main.py                 # FastAPI 工厂 + 中间件 + 错误注册
+│   │   ├── routers/                # 5 个 APIRouter，对应 40 端点
+│   │   │   ├── auth.py  goods.py  categories.py
+│   │   │   ├── attributes.py  barcodes.py  admin.py
+│   │   ├── schemas/                # pydantic v2 请求/响应模型（第一道防线）
+│   │   ├── services/               # 业务逻辑 + ironrules.py（第二道防线）
+│   │   ├── daos/                   # SQL 集中 + 双账号连接池（第三道防线 DB CHECK）
+│   │   └── core/
+│   │       ├── auth.py             # JWT 签发/校验 · require_role Depends
+│   │       ├── audit.py            # audit() · MAN 批次号生成
+│   │       ├── db.py               # goods_app / goods_ro 双连接池
+│   │       └── errors.py           # 业务码 200+code · 422 · 500+错误ID
+│   ├── tests/
+│   │   ├── test_ironrules.py       # 4 铁律单元测试（D2~D3 必须全绿）
+│   │   ├── test_contracts.py       # 40 端点契约测试
+│   │   └── test_dual_account.py    # goods_ro 越权写验证
+│   ├── wheels/                     # ≥19 个离线 wheel（以 requirements.lock 实际解析为准，版本锁定）
+│   ├── requirements.lock
+│   └── venv/                       # 服务器本地虚拟环境
+├── frontend/                       # Mac 侧开发，dist 为发布物
+│   ├── src/
+│   │   ├── api/client.js           # 唯一 API 入口（JWT/错误码/分页）
+│   │   ├── router/  stores/  views/  components/
+│   │   └── views/                  # 10 页面对齐原型 v1.8
+│   └── dist/                       # 构建产物（scp 到服务器同名目录）
+├── migrations/m1_init.sql          # 5 张新表 + 授权 + status 值域，幂等
+├── deploy/                         # systemd unit + nginx goods-mdm.conf
+└── docs/                           # 本方案 + 4 份评审报告归档</pre>
+</div>
+
+<div class="card">
+<h2>3. 数据库前置迁移（m1，D1 完成）</h2>
+<p>实库现有 17 张表（含 3 视图），但接口依赖的 5 张目标表<b>一张都不存在</b>。m1 必须在 D2 前完成，且可重复执行。</p>
+<table>
+<tr><th>新表</th><th>支撑端点</th><th>关键字段 / 约束</th></tr>
+<tr><td><code>sys_change_log</code></td><td>change-log · dashboard · users activity · 所有写端点留痕</td><td>JSONB before/after + operator + action + changed_at(timestamptz)；<b>goods_app 仅授 INSERT</b>，REVOKE UPDATE/DELETE</td></tr>
+<tr><td><code>sys_user</code>（<b>不建 sys_role 表</b>）</td><td>auth/token · admin/users 端点组</td><td>account 唯一、role 英文枚举字段（Viewer/Operator/Steward，方案二 v3.5 §3.5「一期角色用应用层配置」）、status、<b>phone（v1.2 补）</b>、dept、PBKDF2 密码哈希、last_login、<b>token_version / failed_attempts / locked_until</b></td></tr>
+<tr><td><code>sys_unit</code></td><td>admin/units 端点组</td><td>编码→名称→排序→启停 + <code>goods_count</code>（<b>物化字段，禁实时 COUNT</b>，导入任务结束刷新）</td></tr>
+<tr><td><code>sys_attr_template</code></td><td>categories/{id}/template · goods/{barcode}/attrs</td><td>category_id + JSONB 模板定义（必填项、字段类型）</td></tr>
+<tr><td><code>sys_import_job</code></td><td>goods/import · admin/import-jobs/{id}</td><td>batch_id / 总行数 / 成功数 / 失败明细 JSONB / 状态</td></tr>
+</table>
+<div class="danger"><b>m1 三个必须做的额外动作：</b>① <code>ALTER mdm_goods</code> 增 status 值域至 <code>ACTIVE/INACTIVE/VOIDED</code>（现表全 ACTIVE 且无 CHECK，改动风险低）；② <code>audit()</code> 保留 <code>mdm_goods_history.batch_id</code> 的 <b>MAN-YYYYMMDDHHMMSS-&lt;operator&gt;</b> 生成规则（该列 NOT NULL 无默认值，不生成则所有人工变更写历史失败）；③ 回滚演练一次——从基线备份 <code>/data/backups/goods_mdm_baseline_20261123.sql.gz</code> 恢复到临时库验证 m1 可撤销。</div>
+</div>
+
+<div class="card">
+<h2>4. 四条铁律与留痕（D2~D3 地基）</h2>
+<p>前端原型所有提示文案与后端守卫规则一一对应。<b>铁律测试不全绿，不得进入 D4。</b></p>
+<table>
+<tr><th>#</th><th>铁律</th><th>生效端点</th><th>单元测试断言</th></tr>
+<tr><td>①</td><td>新增必查重：verdict=BLOCK 直接拒（业务码 3001），verdict=WARN 需人工确认；40.6% 同名多码基数下不自动合并</td><td><code>POST /goods/check</code> · <code>POST /goods</code></td><td>条码命中/同名命中/别名反向三路均返回正确 verdict；BLOCK 时建档必然失败</td></tr>
+<tr><td>②</td><td>条码建档后不可改；唯一变更通道是 Steward 的 <code>/barcodes/reassign</code></td><td><code>POST /goods</code> · <code>PATCH /goods/{barcode}</code></td><td>PATCH field 白名单不含 barcode；尝试改条码返回 422</td></tr>
+<tr><td>③</td><td>VOIDED 联动写 <code>mdm_barcode_alias</code> 登记 90 天禁复用期，不可逆</td><td><code>POST /goods/{barcode}/status</code></td><td>转 VOIDED 后别名表新增记录；ACTIVE→VOIDED 合法、VOIDED→ACTIVE 返回 3007</td></tr>
+<tr><td>④</td><td>所有改动留痕：谁、何时、改了什么；审计表 goods_app 无 UPDATE/DELETE 权限</td><td>全部写端点</td><td><code>audit()</code> 生成 MAN 批次号；goods_app 对 sys_change_log 执行 UPDATE 必被拒</td></tr>
+</table>
+<div class="note"><b>三道防线：</b>pydantic schema 校验（类型/枚举/必填） → ironrules service 守卫（业务规则） → DB CHECK 约束（金额非负、等级 A-D、version≥1）。任何一层失败都不得写库。乐观锁 <code>version</code> CAS 冲突返回业务码 3009，前端提示刷新重拉详情。</div>
+</div>
+
+<div class="card">
+<h2>5. 开发排期 D1~D13</h2>
+<p>沿用架构方案的阶段划分，把 40 端点与 10 页面落到具体任务与验收条件。前后端可并行：后端 D2~D6 与前端 D7~D10 在 D4 起通过接口契约（OpenAPI）联调。</p>
+
+<div class="mile"><div class="hd">D1 · 桥接通道 + m1 迁移</div>
+<div class="meta">交付物：venv 可导入 FastAPI / wheels 全量（以 lock 解析数为准）/ dist 闭环 / m1 已迁移</div>
+<ol>
+<li>Mac 补下载 <code>gunicorn</code> + <code>pyjwt</code> wheel（<code>--platform manylinux2014_x86_64 --python-version 310</code>），<code>pip download</code> 会连带依赖，<b>最终数量以 <code>requirements.lock</code> 全量解析为准（预计 ≥19）</b>，scp 到远程 <code>backend/wheels/</code></li>
+<li>远程建 venv：<code>python3 -m venv venv && venv/bin/pip install --no-index --find-links=wheels -r requirements.lock</code>；冒烟 <code>python -c "import fastapi,uvicorn,pydantic,jwt,gunicorn"</code></li>
+<li><b>nginx 最小站点前移到 D1（原地配置，不等 D11）</b>：新建 <code>/etc/nginx/sites-available/goods-mdm.conf</code> → <code>listen 8090; root /data/projects/goods-info/09_管理系统/frontend/dist; location / { try_files $uri $uri/ /index.html; }</code>，<code>ln -s</code> 到 sites-enabled 并 <code>nginx -t && systemctl reload nginx</code>。<b>此刻只配静态，不含 <code>/api/v1</code> 反代（D11 补）</b>。前端最小 Vite + Element Plus 脚手架，Mac 构建 dist，scp 到上述 root，浏览器 <code>:8090</code> 可见（SPA 回退验证）</li>
+<li>执行 <code>migrations/m1_init.sql</code>，验证 5 表建成 + 授权生效；<b>脚本末尾 <code>REVOKE CREATE ON SCHEMA public FROM goods_app;</code> 收回建表权限</b>（goods_app 仅保留业务表 DML）。<b>m1 可撤销验证</b>：用 <code>postgres</code> DBA 账号（实测 goods_app <code>rolcreatedb=f</code>，不能建临时库）<code>createdb goods_mdm_rollback_test</code> → 恢复基线备份 → 重放 m1 → 校验后 drop；验证"m1 可撤销"这一件事即可，<b>全量灾备 RTO 演练留到 D11</b></li>
+</ol>
+<p class="mini"><b>验收：</b>三项前置（wheel 装通 / dist 在 :8090 可见 / m1 可回滚且 goods_app 已收权）全绿；<code>ck_goods_status</code> 值域上线。<b>注意</b>：D1 的 :8090 只有静态页，API 404 属正常，D11 补反代后才全链路通。</p></div>
+
+<div class="mile"><div class="hd">D2~D3 · FastAPI 骨架 + core 横切</div>
+<div class="meta">交付物：main 工厂 / db 双连接池 / JWT / audit / ironrules + 铁律单元测试</div>
+<ol>
+<li><code>main.py</code>：FastAPI 工厂 + 全局错误处理器（业务码 200+code / 422 / 500+错误 ID）+ 请求 ID 中间件</li>
+<li><code>core/db.py</code>：goods_app 读写池 + goods_ro 只读池，隔离区 DAO 强制走 ro 池（SQL 层 REVOKE 双保险）</li>
+<li><code>core/auth.py</code>：<code>POST /auth/token</code> OAuth2 Password Flow、PBKDF2 校验、JWT HS256 8h（claim 含 <code>sub/role/ver/exp</code>）、<code>require_role</code> Depends。<b>令牌状态一律落库，禁用内存表</b>（架构 2 worker，内存跨进程不共享）：① 登出 → <code>UPDATE sys_user SET token_version=token_version+1</code>，JWT 的 <code>ver</code> 与库中不一致即拒（旧令牌在全 worker 立即失效）；② 登录失败 → <code>sys_user.failed_attempts+1</code>，达 5 次写 <code>locked_until=now()+10min</code>，成功后清零。令牌状态一律落库、不写内存表、不引 Redis。本节修正架构 v1.1 §安全设计的"令牌黑名单内存表（重启即清）"方案（2 worker 多进程下内存不共享、登出无法跨进程生效），改 <code>token_version</code> 落库，<b>列入回写架构 v1.2 备案清单；架构 6 项裁决本身不变</b>；两逻辑纳入 <code>tests/test_auth_state.py</code>（多 worker 语义用并发请求模拟验证）</li>
+<li><code>core/audit.py</code>：<code>audit()</code> 统一写入，MAN 批次号生成，写 sys_change_log + mdm_goods_history 同事务</li>
+<li><code>services/ironrules.py</code>：4 铁律函数；<code>tests/test_ironrules.py</code> 覆盖全部断言分支</li>
+</ol>
+<p class="mini"><b>验收：</b>铁律测试全绿；<code>/docs</code> 可访问；goods_app 越权 UPDATE 审计表被 DB 拒绝。</p></div>
+
+<div class="mile"><div class="hd">D4~D6 · 后端 6 Router 全量（40 端点）</div>
+<div class="meta">交付物：40 端点实现 + pydantic schema + 契约测试；对应 v1.2 全部接口</div>
+<table>
+<tr><th>Router</th><th>端点数</th><th>实现要点</th></tr>
+<tr><td>auth</td><td>2</td><td>token / logout；JWT claim 为唯一权限依据，body/query 的 role 不参与鉴权</td></tr>
+<tr><td>goods</td><td>11</td><td>分页（近似+精确双计数）、详情（含历史时间轴+模板必填项）、查重三态、建档、PATCH 即点即改、分类调整、状态流转、属性读写、CSV 导入、<b>导出</b></td></tr>
+<tr><td>categories</td><td>7</td><td>171 节点树（缓存 5min）、节点维护、影响分析、模板 GET/PUT、<b>外部码映射 GET/PUT</b></td></tr>
+<tr><td>attributes</td><td>3</td><td>定义批量查/明细、CSV 属性回填</td></tr>
+<tr><td>barcodes</td><td>3</td><td>准入校验（8/13 位+禁复用+别名反向+书号识别）、别名归并、换码登记</td></tr>
+<tr><td>admin</td><td>14</td><td>dashboard、change-log、units（含 goods_count）、sources、quarantine（ro）+导出、users 组（含 phone/activity）、import-jobs</td></tr>
+</table>
+<p class="mini"><b>三日拆分（已按 40 端点对账）：</b>D4 完成 auth 2 + goods 查询/详情/查重/建档/PATCH（5 个）= <b>7 个</b> → D5 完成 <b>goods 剩余 6</b>（分类调整/状态流转/属性 GET+PUT/导入/导出）+ categories 7 + attributes 3 + barcodes 3 = <b>19 个（最重的一天）</b> → D6 完成 admin 14 = <b>14 个</b>；合计 7+19+14=<b>40</b>。<b>实施顺序：</b>先 goods 查询/详情/查重 → 建档/PATCH → 分类树 → admin 用户/字典 → 批量导入 → 导出/dashboard → 边界端点。每完成一个 Router 即跑契约测试。<b>验收：</b>40 端点契约测试通过；方案二 v3.5 的 19 项功能逐项映射（见 §5.2）；goods_ro 隔离验证通过。</p></div>
+
+<div class="mile"><div class="hd">D7~D10 · Vue3 五视图域（Mac 构建）</div>
+<div class="meta">交付物：10 页面前端工程，交互与原型 v1.8 一一对应</div>
+<table>
+<tr><th>阶段</th><th>页面/能力</th><th>关键交互（对齐 v1.8）</th></tr>
+<tr><td>D7</td><td>工程脚手架 + api/client.js + router + Pinia + 登录</td><td>JWT 头注入、业务码统一处理、三档角色 store、路由守卫</td></tr>
+<tr><td>D8</td><td>工作台首页 + 商品档案 + 商品详情</td><td>dashboard 4 卡 + change-log 时间轴 + 导出；左树右表 + 真过滤；即点即改 + 分类弹窗 + 停用</td></tr>
+<tr><td>D9</td><td>新增商品 + 分类管理 + 条码管理</td><td>两段式查重三态 + CSV 批量（进度/失败清单）；外部码对照 + 影响分析 + 模板；条码校验 + 换码</td></tr>
+<tr><td>D10</td><td>基础字典 + 数据治理 + 用户管理</td><td>单位 goods_count + 新增编辑；一码多品/未分类只读查询 + 导出；用户闭环（查询/抽屉/启停/重置密码）</td></tr>
+</table>
+<p class="mini"><b>验收：</b>建档两段式查重、状态流转、模板动态表单三件事可在浏览器演示；20 处原空壳按钮全部真实调用后端端点；角色守卫与后端同口径。</p></div>
+
+<div class="mile"><div class="hd">D11~D12 · 联调 + 部署 + 备份</div>
+<div class="meta">交付物：:8090 全链路可访问、systemd + nginx 就位、备份 cron 就绪</div>
+<ol>
+<li><b>nginx 站点在 D1 已建、此处只补一段反代</b>：在 D1 的 <code>goods-mdm.conf</code> 追加 <code>location /api/v1/ { proxy_pass http://127.0.0.1:8000; }</code>（8090 对外 / 8000 是 FastAPI，语义已锁定）；同源部署<b>不开 CORS</b></li>
+<li>systemd unit 托管 gunicorn（UvicornWorker <b>×2 worker，与令牌落库方案配套</b>）；日志记请求 ID/耗时/状态码</li>
+<li>前端 dist 发布约定：按日期目录 + nginx root 切换，可秒级回滚</li>
+<li>备份 cron：每日 <code>pg_dump | gzip</code> 到 <code>/data/backups/</code>，保留 7 天；<b>全量灾备恢复演练</b>（DBA 账号建临时库 → 恢复 207M 基线备份 → 计时）。<b>与 D1 的"m1 可撤销验证"目的不同，不重复计</b></li>
+</ol>
+<p class="mini"><b>验收：</b>浏览器 :8090 静态页 + API 全链路走通；停 gunicorn 后 systemd 自动拉起；灾备恢复一次通过并记录 RTO。</p></div>
+
+<div class="mile"><div class="hd">D13 · 验收</div>
+<div class="meta">交付物：操作手册 + 铁律验收清单 + 方案二 v3.5 §6 逐条勾验</div>
+<ul>
+<li>操作手册：业务员（建档/改价/查分类）、管理员（分类/模板/用户/导出）两册</li>
+<li>铁律验收清单：4 条逐条演示 + 截图留证（对应方案二 v3.5 <b>§6 验收标准原文"四条铁律系统可验证"</b>）</li>
+<li><b>按 §5.2 映射表逐行勾验方案二 v3.5 的 19 项功能</b>（5+4+3+3+4）；联合评审 9 项 + 开发方案评审 10 项问题回归确认</li>
+</ul>
+</div>
+</div>
+
+<div class="card">
+<h2>5.1 前后端并行协调机制</h2>
+<p>后端 D4~D6 与前端 D7~D10 有时间重叠，必须有明确的契约冻结与联调机制，否则两线各自为政。接口方案 v1.2 的 40 端点契约即唯一真相源。</p>
+<table>
+<tr><th>机制</th><th>做法</th><th>责任方</th></tr>
+<tr><td><b>契约冻结</b></td><td>D1 把 v1.2 的 40 端点录入 <code>openapi.yaml</code>（或从 FastAPI 代码反向生成），前端据此写死 <code>api/client.js</code> 的方法签名；冻结后变更须走评审</td><td>后端主责，前端确认</td></tr>
+<tr><td><b>Mock 先行</b></td><td>D4 后端端点未就绪时，前端用 <code>api/mock.js</code> 按契约返回假数据（结构必须与真实响应逐字段一致），D7~D10 照常推进</td><td>前端</td></tr>
+<tr><td><b>逐 Router 联调</b></td><td>后端每完成一个 Router（auth→goods→categories→attributes→barcodes→admin），通知前端切换该域从 mock 到真实端点，当天完成该域回归</td><td>双方</td></tr>
+<tr><td><b>契约一致校验</b></td><td>前端 <code>api/client.js</code> 的每个方法与 OpenAPI 路径一一对应；<b>§5.2 映射表的端点一律从 OpenAPI 自动提取，禁止手抄</b>（v1.1 曾因手抄写错 2 处）；D11 联调时机器比对：40 端点全覆盖、0 裸 fetch、0 字段漂移</td><td>双方</td></tr>
+</table>
+<div class="note"><b>关键提醒：</b>前端原型 v1.8 里 18 个交互函数注释了对应端点路径，接入真实 API 时直接把注释里的路径换成 <code>client.get/post/patch()</code> 调用即可——原型的交互逻辑无需重写，只需替换数据层。</div>
+</div>
+
+<div class="card">
+<h2>5.2 方案二 19 项功能 → 端点 → 验收动作（D13 勾验清单）</h2>
+<p>取自方案二 v3.5 §3.1~§3.5 原文功能清单（5+4+3+3+4=19 项），逐项映射到接口 v1.2 端点。<b>此表即 D13 的逐条勾验依据</b>，与"四条铁律验收"并列。</p>
+<table>
+<tr><th style="width:60px">域</th><th style="width:110px">功能</th><th style="width:270px">对应端点（v1.2）</th><th>验收动作</th></tr>
+<tr><td rowspan="5">商品</td><td>主档查询</td><td><code>GET /goods</code> · <code>GET /goods/{barcode}</code></td><td>按条码/名称/分类/等级/状态组合过滤；详情含历史时间轴与模板必填项</td></tr>
+<tr><td>查重建档</td><td><code>POST /goods/check</code> · <code>POST /goods</code></td><td>条码命中 BLOCK 拒建、同名 WARN 提示、干净才放行；三态演示</td></tr>
+<tr><td>档案维护</td><td><code>PATCH /goods/{barcode}</code> · <code>POST /goods/{barcode}/category</code> · <code>GET /goods/export</code></td><td>点字即改白名单、分类弹窗调整、导出流式；<b>barcode 改不动</b></td></tr>
+<tr><td>状态流转</td><td><code>POST /goods/{barcode}/status</code></td><td>ACTIVE→INACTIVE→VOIDED 合法；反向 3007；流转原因必填</td></tr>
+<tr><td>变更留痕</td><td><code>GET /admin/change-log</code> · <code>GET /goods/{barcode}</code> 时间轴</td><td>每次改动可回放（人/时/前后值）；batch_id 为 MAN 格式；审计表不可改</td></tr>
+<tr><td rowspan="4">分类</td><td>类目树管理</td><td><code>GET /categories/tree</code> · <code>PUT /categories/{id}</code></td><td>171 节点（13 L1/158 L2）、改名/启停、路径物化同步</td></tr>
+<tr><td>调整影响分析</td><td><code>POST /categories/{id}/impact</code></td><td>调整前显示挂载量；有商品的分类删除被 3008 拒</td></tr>
+<tr><td>外部码映射</td><td><code>GET/PUT /categories/{id}/external-map</code></td><td>外部编码对照维护（实库 349 条、2 来源）</td></tr>
+<tr><td>未分类占位管理</td><td><code>GET /goods?category_id=C00</code></td><td>C00 占位（197,059）；归类即改挂叶子并留痕</td></tr>
+<tr><td rowspan="3">属性</td><td>模板配置</td><td><code>GET/PUT /categories/{id}/template</code></td><td>按类目配必填项 JSONB；Steward 权限，录入员随详情读取</td></tr>
+<tr><td>属性维护</td><td><code>GET/PUT /goods/{barcode}/attrs</code></td><td>详情页按模板渲染表单；缺必填在建档/变更时拦截</td></tr>
+<tr><td>批量回填</td><td><code>POST /goods/import</code>（属性 CSV）</td><td>按模板批量导入，标记人工/导入来源</td></tr>
+<tr><td rowspan="3">条码</td><td>别名归并</td><td><code>POST /barcodes/alias</code></td><td>alias→master 登记，BIG_PACK/OLD_CODE/DIFF_PACK 三类型</td></tr>
+<tr><td>换码登记</td><td><code>POST /barcodes/reassign</code></td><td>旧码登记别名 + 90 天禁复用；仅 Steward 可用</td></tr>
+<tr><td>准入规则</td><td><code>POST /barcodes/validate</code> · <code>POST /goods/check</code></td><td>8/13 位校验、禁复用校验、书号识别（978/979 提示）</td></tr>
+<tr><td rowspan="4">基础</td><td>单位字典</td><td><code>GET/POST /admin/units</code> · <code>PUT /admin/units/{code}</code></td><td>22 编码语义维护 + goods_count 物化值；名称待业务确认</td></tr>
+<tr><td>来源可信度配置</td><td><code>GET /admin/sources</code></td><td>来源表可信度展示；<b>不向业务暴露 0.9/0.7 数字</b>，只显"更可靠/次可靠"</td></tr>
+<tr><td>隔离区查询入口</td><td><code>GET /admin/quarantine</code> · <code>GET /admin/quarantine/export</code></td><td>只读 138,083 条（全 SAME_CODE_DIFF_GOODS）；<b>goods_ro 强制，无写端点</b></td></tr>
+<tr><td>权限与操作人</td><td><code>POST /auth/token</code> · <code>GET/POST /admin/users</code> · <code>PUT /admin/users/{account}</code></td><td>三角色 JWT claim 唯一依据；phone/活动记录；前端切换仅演示</td></tr>
+</table>
+<div class="note"><b>映射口径：</b>19 项功能是<b>业务能力</b>，40 端点是<b>技术契约</b>，二者是多对多关系（如"查重建档"跨 2 端点、"档案维护"跨 3 端点）；D13 按本表逐行勾验，另加 §4 四条铁律逐条演示截图。</div>
+</div>
+
+<div class="card">
+<h2>6. 测试策略</h2>
+<table>
+<tr><th>层级</th><th>范围</th><th>通过标准</th></tr>
+<tr><td>单元测试</td><td>4 铁律 + audit MAN 批次号 + 状态合法性表 + 条码格式校验 + <b>令牌状态落库（token_version 递增 / failed_attempts 达 5 锁定 / 跨 worker 一致）</b></td><td>分支全覆盖，D3 起每次提交必跑；<code>tests/test_auth_state.py</code> 用并发请求模拟多 worker</td></tr>
+<tr><td>契约测试</td><td>40 端点请求/响应字段、业务码、权限（Viewer/Operator/Steward 各一遍）；<b>方法分布从 OpenAPI 反推（GET 18 / POST 15 / PUT·PATCH 7），不手填</b></td><td>与 v1.2 契约逐字段对齐；权限越权必拒；40 端点方法分布自动校验</td></tr>
+<tr><td>数据隔离测试</td><td>隔离区端点强制 goods_ro；goods_app 对审计表无 UPDATE/DELETE、<b>对 public schema 无 CREATE（m1 已收权）</b></td><td>越权写必被 DB 拒绝；越权建表必被拒</td></tr>
+<tr><td>性能测试</td><td>432 万分页首页/深分页、分类树 171 节点、导出 20 万行</td><td>首页 &lt; 2s；深分页超 10 万引导用分类树；导出流式不 OOM</td></tr>
+<tr><td>联调测试</td><td>前端 10 页面 × 后端 40 端点，重点 20 处 v1.8 实接按钮</td><td>前端提示与后端返回一致；无裸 fetch</td></tr>
+<tr><td>恢复演练（分两类）</td><td><b>D1：m1 可撤销验证</b>（小临时库、只验建表撤销）· <b>D11：全量灾备 RTO</b>（207M 基线备份、计时恢复）</td><td>两类各一次通过；D1 记"可撤销"、D11 记 RTO，不重复计</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2>7. 风险与应对</h2>
+<table>
+<tr><th>风险</th><th>影响</th><th>应对</th></tr>
+<tr><td><b>离线桥断链</b>：服务器 pip/npm 不通</td><td>依赖装不上，开发停摆</td><td>wheel 全量版本锁定入 <code>backend/wheels/</code> 并纳入源码桥备份；Mac 侧保留 wheel 母本；新依赖先经 wheel 桥验证再入工程</td></tr>
+<tr><td><b>Python 版本错配</b>：Mac 3.13 vs 服务器 3.10</td><td>本地装的包 scp 过去不可用</td><td>wheel 一律 <code>--python-version 310 --platform manylinux2014_x86_64</code> 下载，禁止直接拷本地 site-packages</td></tr>
+<tr><td><b>大表性能</b>：432 万 COUNT / 导出</td><td>页面卡死、服务 OOM</td><td>近似计数 + 精确待办分离；导出流式 5000 行/批 + 20 万行上限；深分页 10 万封顶</td></tr>
+<tr><td><b>权限穿透回潮</b></td><td>录入员提权、越权改数据</td><td>前端三档守卫 + 后端 JWT claim 唯一依据 + 端点级 <code>require_role</code> + DB 权限，四层防线；契约测试覆盖三角色</td></tr>
+<tr><td><b>审计写入失败</b>：batch_id NOT NULL</td><td>改价成功但留痕丢失（合规风险）</td><td><code>audit()</code> 强制生成 MAN 批次号，单元测试断言；写业务与写留痕同事务，任一失败整体回滚</td></tr>
+<tr><td><b>架构口径漂移</b>：23 vs 40 端点</td><td>开发按旧文档漏做 17 个</td><td>本方案显式声明以 40 为准；回写架构 v1.2 备案；D4 按 Router 逐个核对端点清单</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2>8. 启动检查清单（D1 开工前）</h2>
+<div class="grid3">
+<div class="box"><b>环境</b><ul><li>wheel 全量就位（含 gunicorn/pyjwt，以 lock 解析为准）</li><li>venv 冒烟通过</li><li><b>nginx goods-mdm.conf 建好（D1 静态站点，:8090 可见）</b></li></ul></div>
+<div class="box"><b>数据</b><ul><li>m1 迁移完成 + goods_app 已收 CREATE 权</li><li><b>DBA 账号就绪（goods_app 无 CREATEDB）</b></li><li>m1 可撤销验证通过 + status 值域扩展</li></ul></div>
+<div class="box"><b>文档</b><ul><li>40 端点契约冻结（GET18/POST15/PUT7）</li><li>架构 v1.2 备案 + §5.2 功能映射表</li><li>基线备份可恢复（DBA 账号验证）</li></ul></div>
+</div>
+<div class="good" style="margin-top:14px"><b>开发启动判定：</b>三项前置全绿 → 进入 D2。任一项未绿，先解决前置，不带病开工。</div>
+<p class="mini">依据：方案二 v3.5 · 架构方案 v1.1 · 接口方案 v1.2 · 前端原型 v1.8 · 前后端联合评审报告 · PostgreSQL goods_mdm 实库实测 · 远程环境实测（2026-11-23）。所有字段、端点、版本均取自实库与既有文档，非推测。</p>
+</div>
+
+<div class="footer">商品主数据管理系统 · 详细开发方案 v1.2（复审快修版 · D1~D13 开工基线） · 2026-11-23</div>
+</div>
+</body>
+</html>

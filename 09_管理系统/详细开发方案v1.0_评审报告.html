@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>详细开发方案 v1.0 · 评审报告</title>
+<style>
+:root{--ink:#1f2937;--sub:#4b5563;--mut:#6b7280;--line:#e5e7eb;--bg:#f5f7fa;--card:#fff;--pri:#2563eb;--red:#dc2626;--amb:#d97706;--grn:#059669;--vio:#7c3aed}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.72}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 30px 60px}
+.hero{background:linear-gradient(135deg,#1e3a8a,#2563eb 62%,#0891b2);color:#fff;border-radius:14px;padding:28px 32px;margin-bottom:18px}
+.hero h1{margin:0 0 6px;font-size:25px}
+.hero .meta{font-size:13px;opacity:.92}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:18px}
+.kpi{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:10px 12px}
+.kpi .n{font-size:20px;font-weight:700}.kpi .l{font-size:11px;opacity:.86}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 24px;margin-bottom:16px}
+h2{font-size:17px;margin:0 0 12px;padding-left:11px;border-left:4px solid var(--pri)}
+h3{font-size:14.5px;margin:16px 0 8px;color:#1e3a8a}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin:9px 0}
+th{background:#f1f5f9;text-align:left;padding:7px 9px;border:1px solid var(--line);font-weight:600;color:#334155}
+td{padding:7px 9px;border:1px solid var(--line);vertical-align:top}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;background:#eef2ff;color:#4338ca;padding:1px 5px;border-radius:4px;font-size:11.4px}
+pre{background:#1d2535;color:#c6d4f0;border-radius:7px;padding:11px 14px;font-size:11.4px;line-height:1.6;overflow-x:auto}
+.tag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap}
+.t-red{background:#fee2e2;color:#b91c1c}.t-amb{background:#fef3c7;color:#b45309}.t-blue{background:#dbeafe;color:#1d4ed8}.t-grn{background:#d1fae5;color:#047857}
+.issue{border:1px solid var(--line);border-left:4px solid var(--amb);border-radius:8px;padding:12px 16px;margin:11px 0;background:#fffdf9}
+.issue.p0{border-left-color:var(--red);background:#fffafa}
+.issue.p2{border-left-color:var(--pri);background:#fafcff}
+.issue .hd{font-weight:700;font-size:14px;margin-bottom:6px}
+.issue .hd .id{display:inline-block;min-width:58px}
+.issue p{margin:5px 0}
+.issue .ev{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:5px;padding:8px 11px;font-size:12px;margin:7px 0}
+.issue .fx{color:#047857;font-weight:600}
+.note{background:#eff6ff;border-left:4px solid var(--pri);padding:10px 14px;border-radius:6px;font-size:13px;margin:11px 0}
+.good{background:#ecfdf5;border-left:4px solid var(--grn);padding:10px 14px;border-radius:6px;font-size:13px;margin:11px 0}
+.danger{background:#fef2f2;border-left:4px solid var(--red);padding:10px 14px;border-radius:6px;font-size:13px;margin:11px 0}
+ul{margin:6px 0;padding-left:22px}li{margin:3px 0}
+.mini{font-size:12px;color:var(--mut)}
+.footer{text-align:center;color:var(--mut);font-size:12px;margin-top:22px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+  <h1>详细开发方案 v1.0 · 全面评审</h1>
+  <div class="meta">评审时间 <b>2026-11-23 21:05</b>　|　方法：<b>机器扫描 + 上游三文档逐条比对 + PG 实库 / 远程环境实测</b>　|　对象：前端 v1.8 × 接口 v1.2 × 架构 v1.1</div>
+  <div class="kpis">
+    <div class="kpi"><div class="n">10</div><div class="l">问题总数</div></div>
+    <div class="kpi"><div class="n">2 / 5 / 3</div><div class="l">P0 / P1 / P2</div></div>
+    <div class="kpi"><div class="n">10</div><div class="l">通过项</div></div>
+    <div class="kpi"><div class="n">D1</div><div class="l">启动判定：暂不具备</div></div>
+    <div class="kpi"><div class="n">v1.1</div><div class="l">建议修订版本</div></div>
+  </div>
+</div>
+
+<div class="card">
+<h2>一、总体结论</h2>
+<p>方案质量延续了接口 v1.2 的水平——<b>基于实测、显式处理口径差异、把排期落到可验收</b>，方向与非功能设计都扎实，<b>无方向性错误</b>。但作为"可开工"的执行方案，有 <b>2 个 P0 必须在 D1 前解决</b>：</p>
+<ul>
+<li><b>D1 前置自相矛盾</b>：要求"dist 部署后浏览器 :8090 可见"，但把 nginx 站点配置排到了 D11 —— 没有站点配置，D1 的三项前置"全绿"永远无法判定。</li>
+<li><b>安全地基缺陷</b>：登出黑名单与登录失败锁用"内存表"，而架构明确 gunicorn <b>2 worker</b>，内存状态跨进程不共享 —— 登出在另一个 worker 上失效，是真实的安全漏洞而非瑕疵。</li>
+</ul>
+<div class="danger"><b>启动判定：暂不具备开工条件。</b>先修 2 个 P0（改动量都很小：nginx 站点配置前移 + 令牌状态落库），再按 P1 补齐排期算术与契约口径，即可进 D1。</div>
+</div>
+
+<div class="card">
+<h2>二、问题清单</h2>
+
+<div class="issue p0">
+<div class="hd"><span class="id"><span class="tag t-red">P0-1</span></span>D1 前置"浏览器 :8090 可见"与 nginx 站点配置排在 D11 时序矛盾</div>
+<p>D1 里程碑第 3 条要求"前端最小 Vite 脚手架 → scp dist → 浏览器 :8090 可见（SPA 回退验证）"，D1 验收写"三项前置全绿 → 进入 D2"。但 D11~D12 的第 1 条才写"nginx <code>goods-mdm.conf</code>：root 指 dist、<code>try_files</code> 回退、<code>/api/v1</code> 反代"。</p>
+<div class="ev"><b>实库/环境实测：</b>nginx 1.18.0 已安装，但 <code>/etc/nginx/sites-enabled/</code> 仅有 <code>penetration-ip-https</code>，无 goods-mdm 站点；<code>ss -ltnp</code> 查 8090 / 8000 <b>均无监听</b>。也就是说 D1 把 dist 拷过去，没有任何站点指向它，":8090 可见"无法验证。</div>
+<p><span class="fx">建议：</span>把 nginx 最小站点配置（root + try_files，先不含反代）提到 D1 第 3 条，D11 只补 <code>/api/v1</code> 反代与 systemd。同步修改 D1 交付物与验收文案，让"三项前置"可实际判定。</p>
+</div>
+
+<div class="issue p0">
+<div class="hd"><span class="id"><span class="tag t-red">P0-2</span></span>登出黑名单 / 登录失败锁用"内存表"，与架构 2 worker 多进程冲突</div>
+<p>D2~D3 第 3 条写"登出黑名单内存表、登录失败 5 次锁 10 分钟"。但架构方案 v1.1 明确部署形态为 <code>gunicorn + UvicornWorker</code> <b>×2 worker</b>，开发方案 §1 部署图也写"gunicorn + UvicornWorker"。</p>
+<div class="ev"><b>后果推演：</b>用户在 worker A 登出 → 令牌写入 A 的内存黑名单；下一个请求被分发到 worker B → B 不知道该令牌已登出，请求照常通过。登录失败计数同理，被两个 worker 各记一半，"5 次锁 10 分钟"实际变为约 10 次才触发，且锁只在单个 worker 生效。架构裁决"不引 Redis"不能成为内存态的理由。</div>
+<p><span class="fx">建议：</span>令牌状态落库——<code>sys_user</code> 增 <code>token_version INT</code>，登出时 <code>version+1</code>，JWT claim 带 version，端点校验时比对；或登出黑名单写 <code>sys_token_blacklist</code> 表（带过期时间，定时清理）。登录失败计数同样写 DB 或 <code>sys_user.failed_attempts / locked_until</code> 字段。两方案都不引 Redis、不破坏架构裁决，且可被契约测试覆盖。</p>
+</div>
+
+<div class="issue">
+<div class="hd"><span class="id"><span class="tag t-amb">P1-1</span></span>端点方法分布写错：POST 16 / PUT·PATCH 6，实测应为 15 / 7</div>
+<p>§0 口径差异段写"40 个（GET 18 / POST 16 / PUT·PATCH 6）"。机器扫描接口 v1.2 总览表实测为 <b>GET 18 / POST 15 / PUT·PATCH 7</b>，合计同为 40，但 POST 与 PUT 各差 1。</p>
+<div class="ev">差异来源：<code>PATCH /goods/{barcode}</code>、<code>PUT/PATCH /goods/{barcode}/attrs</code> 等属 PUT·PATCH 域，方按 6 个漏算了 1 个。方法分布是契约测试的参数，写错会导致测试集按错误方法生成。</div>
+<p><span class="fx">建议：</span>改为"GET 18 / POST 15 / PUT·PATCH 7"，并让契约测试直接从 OpenAPI 反推分布，不手填。</p>
+</div>
+
+<div class="issue">
+<div class="hd"><span class="id"><span class="tag t-amb">P1-2</span></span>D4~D6 三日拆分算术漏 2 个端点，"goods 剩余 4"应为 6</div>
+<p>D4~D6 拆分原文："D4 完成 auth 2 + goods 查询/详情/查重/建档/PATCH（7 个）→ D5 完成 goods 剩余 <b>4</b> + categories 7 + attributes 3 + barcodes 3 → D6 完成 admin 14"。</p>
+<div class="ev"><b>核对：</b>接口 v1.2 的 goods 域实测 <b>11 个</b>端点，D4 做掉 5 个（查询/详情/查重/建档/PATCH），应剩 <b>6 个</b>（分类调整/状态流转/属性 GET+PUT/导入/导出），而非 4。按原文加总：D4=7 + D5=17 + D6=14 = <b>38 个</b>，比 40 少 2 个。Router 总数表（2+11+7+3+3+14=40）是对的，错在三日拆分。</div>
+<p><span class="fx">建议：</span>D5 改为"goods 剩余 6 + categories 7 + attributes 3 + barcodes 3 = 19 个"，并为 D5 标注这是三天里最重的一天；或把 goods 的导出/导入挪到 D6 与 admin 分摊。</p>
+</div>
+
+<div class="issue">
+<div class="hd"><span class="id"><span class="tag t-amb">P1-3</span></span>"5 张新表"实际列了 6 张 —— sys_role 是否建表口径不一</div>
+<p>§3 m1 表格列出：<code>sys_change_log</code>、<code>sys_user</code> <b>+ <code>sys_role</code></b>、<code>sys_unit</code>、<code>sys_attr_template</code>、<code>sys_import_job</code> —— 按表名数是 <b>6 张</b>。但全文 4 处写"5 张目标表 / 5 张新表"，接口 v1.2 也写"新建 sys_user + sys_role"后接"m1 幂等建 5 张新表"。</p>
+<div class="ev">机器核对接口 v1.2：<code>sys_role</code> 仅出现 1 次、<code>sys_user</code> 2 次，角色在契约里是<b>英文枚举</b>（Viewer/Operator/Steward）而非独立表。开发方案把它写成一张表，与"5 张"冲突。</div>
+<p><span class="fx">建议：</span>二选一并写死：① 角色用枚举存 <code>sys_user.role</code> 字段，不建 <code>sys_role</code> 表（保持 5 张，与接口 v1.2 一致）；② 确需 sys_role 表则全文改"6 张"并回写接口 v1.2。推荐 ①。</p>
+</div>
+
+<div class="issue">
+<div class="hd"><span class="id"><span class="tag t-amb">P1-4</span></span>"19 项功能覆盖"缺可追溯映射，D13 验收引用不准确</div>
+<p>D4~D6 验收写"19 项功能覆盖"，D13 写"方案二 v3.5 §6 验收标准逐条勾验"。核对方案二 v3.5 原文：确有"5 大功能域 · 19 项功能"，但 <b>§6 验收标准原文是"四条铁律系统可验证"</b>，不是 19 项功能。</p>
+<div class="ev">方案里既没列这 19 项是哪 19 项，也没给"19 项功能 → 40 端点"映射，D13 勾验时无清单可依；且把 §6 的引用对象写错。</div>
+<p><span class="fx">建议：</span>加一张"19 项功能 → 端点 → 验收动作"对照表（可直接从方案二 v3.5 功能清单抄），D13 改为"方案二 v3.5 功能清单 19 项 + §6 四条铁律逐条勾验"。</p>
+</div>
+
+<div class="issue">
+<div class="hd"><span class="id"><span class="tag t-amb">P1-5</span></span>回滚演练账号未明确，goods_app 实测无 CREATEDB 权限</div>
+<p>D1 第 4 条要求"从基线备份恢复到临时库做回滚演练"，D1 验收也写"m1 可回滚"。但 PG <code>goods_mdm</code> 当前业务账号是 <code>goods_app</code>。</p>
+<div class="ev"><b>实测：</b><code>goods_app | rolcreatedb=f | public schema CREATE=t | goods_mdm CREATE=t</code>。即可在建表（m1 可行），但<b>不能创建数据库</b>——恢复到"临时库"这一步用 goods_app 必然失败。当前库列表只有 goods_mdm / postgres / template0 / template1。</div>
+<p><span class="fx">建议：</span>写明回滚演练用 DBA 账号（如 postgres）<code>createdb goods_mdm_rollback_test</code> 后恢复，goods_app 只做 m1 正向建表；并把这条写进启动检查清单的"数据"栏。</p>
+</div>
+
+<div class="issue p2">
+<div class="hd"><span class="id"><span class="tag t-blue">P2-1</span></span>19 个 wheel 的数量需按依赖实际核对</div>
+<p>D1 写"17 个 + gunicorn + pyjwt = 19 个"。<code>pip download</code> 会连带下载依赖（gunicorn 依赖 <code>packaging</code> 等），实际 wheel 数很可能超过 19。</p>
+<p><span class="fx">建议：</span>改为"以 <code>requirements.lock</code> 全量下载结果为准（预计 ≥19），版本锁定"，不要写死数量作为验收条件。</p>
+</div>
+
+<div class="issue p2">
+<div class="hd"><span class="id"><span class="tag t-blue">P2-2</span></span>恢复演练在三处重复出现，目的未区分</div>
+<p>D1"回滚演练一次"（验证 m1 可撤销）、D11~D12"恢复演练一次通过"（验证灾备）、§6 测试策略"恢复演练：基线备份→临时库→m1 重放"（验收标准）三处写了同一动作。</p>
+<p><span class="fx">建议：</span>明确两者目的：D1 是 <b>m1 可逆性验证</b>（小临时库、只验建表撤销）；D11 是 <b>灾备 RTO 验证</b>（全量 207M 备份、计时恢复）。§6 合并为一条，分别标注 D1 / D11 通过标准。</p>
+</div>
+
+<div class="issue p2">
+<div class="hd"><span class="id"><span class="tag t-blue">P2-3</span></span>8090 / 8000 端口语义需在 D1 站点配置中明确</div>
+<p>方案 D11 写 <code>/api/v1</code> 反代到 127.0.0.1:8000（FastAPI），8090 是 nginx 对外端口，这与架构一致。但架构方案另有一处写"nginx 新增站点 /api/v1 反代 :8090"（疑为原文笔误），且 D1 没提前说明 dist 该放哪个 root。</p>
+<p><span class="fx">建议：</span>D1 站点配置里把端口语义与 root 路径写死：<code>listen 8090; root .../frontend/dist; location /api/v1/ { proxy_pass http://127.0.0.1:8000; }</code>，消除歧义。</p>
+</div>
+
+<div class="issue p2">
+<div class="hd"><span class="id"><span class="tag t-blue">P2-4</span></span>goods_app 保留 public schema CREATE 权限，最小权限原则未收口</div>
+<p>实测 goods_app 对 public schema 和 goods_mdm 库都有 CREATE 权限（m1 建表需要）。但 m1 完成后若保留，业务账号仍可在生产库任意建表。</p>
+<p><span class="fx">建议：</span>m1 脚本末尾加 <code>REVOKE CREATE ON SCHEMA public FROM goods_app;</code>，把建表权限收回 DBA；后续 DDL 走变更流程。与已有的"sys_change_log 仅授 INSERT"形成一致的最小权限体系。</p>
+</div>
+
+</div>
+
+<div class="card">
+<h2>三、通过项（10 项）</h2>
+<div class="good">
+<ul>
+<li><b>HTML 结构完整</b>：所有标签全配对，无残留异常字符。</li>
+<li><b>阶段全覆盖</b>：D1~D13 每一阶段均单独出现，架构 D 阶段划分被完整继承。</li>
+<li><b>Router 总数正确</b>：2+11+7+3+3+14 = 40，与接口 v1.2 的 40 端点对账一致（仅三日拆分错，见 P1-2）。</li>
+<li><b>口径差异显式处理</b>：架构"约 23 端点" vs 接口 40 的差异在 §0 用警示框写明，以 40 为准且不推翻架构裁决——这是防止漏做 17 个端点的关键设计。</li>
+<li><b>三桥方案与架构一致</b>：wheel 桥 / 构建桥 / 源码桥的方向、命令、用途与架构裁决③完全对齐。</li>
+<li><b>6 项架构裁决完整复述</b>，并写明"推翻任一项须走评审"。</li>
+<li><b>四铁律与错误码对应</b>：3001（查重 BLOCK）、3007（状态流转非法）、3009（乐观锁）三码引用与接口 v1.2 定义一致；audit MAN 批次号、goods_app 无审计表 UPDATE/DELETE 均写入验收断言。</li>
+<li><b>权限实测可行</b>：goods_app 可在 public schema 建表（m1 可正向执行），sudo 免密可用（D11 部署可执行），nginx 已安装（D11 少一步安装）。</li>
+<li><b>"19 项功能"出处真实</b>：方案二 v3.5 确有"5 大功能域 · 19 项功能"，非编造（仅缺映射与 §6 引用写错，见 P1-4）。</li>
+<li><b>前后端协调机制到位</b>：契约冻结 / Mock 先行 / 逐 Router 联调 / 机器比对四机制完整；"前端 18 函数注释含端点路径、接 API 只换数据层"的洞察准确，可显著减少联调返工。</li>
+</ul>
+</div>
+</div>
+
+<div class="card">
+<h2>四、修订建议（v1.1 一次修完）</h2>
+<table>
+<tr><th style="width:80px">批次</th><th style="width:210px">修订项</th><th>动作</th></tr>
+<tr><td><span class="tag t-red">开工前</span></td><td>P0-1 nginx 前移</td><td>nginx 最小站点配置提到 D1，D11 只补反代与 systemd；修 D1 交付物/验收文案</td></tr>
+<tr><td><span class="tag t-red">开工前</span></td><td>P0-2 令牌状态落库</td><td>sys_user 加 token_version + failed_attempts / locked_until（或独立黑名单表），D2~D3 描述同步，纳入契约测试</td></tr>
+<tr><td><span class="tag t-amb">同批</span></td><td>P1-1 方法分布</td><td>改 15 / 7，契约测试从 OpenAPI 反推</td></tr>
+<tr><td><span class="tag t-amb">同批</span></td><td>P1-2 三日拆分</td><td>D5 改"goods 剩余 6 = 19 个"，标注为最重一天或分摊到 D6</td></tr>
+<tr><td><span class="tag t-amb">同批</span></td><td>P1-3 表数口径</td><td>角色用枚举不建表，全文稳定为 5 张，与接口 v1.2 对齐</td></tr>
+<tr><td><span class="tag t-amb">同批</span></td><td>P1-4 功能映射</td><td>补"19 项功能 → 端点 → 验收动作"表，D13 引用改正</td></tr>
+<tr><td><span class="tag t-amb">同批</span></td><td>P1-5 回滚账号</td><td>写明 DBA 账号建临时库，goods_app 只做正向建表</td></tr>
+<tr><td><span class="tag t-blue">可随后</span></td><td>P2×4</td><td>wheel 数量改以 lock 为准、区分两类恢复演练、端口/root 写死、m1 末尾收回 CREATE</td></tr>
+</table>
+<div class="note"><b>修订后的启动判定：</b>2 个 P0 解决后即可进 D1；P1 建议同批修完（都是文档层改动，不影响架构裁决）；P2 可在 D1 执行过程中补齐。全部修完即为 D1~D13 可开工基线。</div>
+</div>
+
+<div class="footer">详细开发方案 v1.0 评审报告 · 2026-11-23 · 基于架构 v1.1 / 接口 v1.2 / 前端 v1.8 / PG 实库与远程环境实测</div>
+</div>
+</body>
+</html>

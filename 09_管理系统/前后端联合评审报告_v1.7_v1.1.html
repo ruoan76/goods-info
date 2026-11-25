@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>前后端联合评审报告 · 前端 v1.7 × 接口方案 v1.1</title>
+<style>
+:root{--ink:#1f2937;--sub:#4b5563;--mut:#6b7280;--line:#e5e7eb;--bg:#f8fafc;--card:#fff;--pri:#2563eb;--red:#dc2626;--amb:#d97706;--grn:#059669;--vio:#7c3aed}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.7}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 32px 60px}
+.hero{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border-radius:14px;padding:28px 32px;margin-bottom:22px}
+.hero h1{margin:0 0 8px;font-size:26px;font-weight:700}
+.hero .meta{font-size:13px;opacity:.9}
+.hero .meta b{opacity:1}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px}
+.kpi{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:12px 14px}
+.kpi .n{font-size:24px;font-weight:700;line-height:1.2}
+.kpi .l{font-size:11.5px;opacity:.85;margin-top:3px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 26px;margin-bottom:18px}
+h2{font-size:18px;margin:0 0 14px;padding-left:11px;border-left:4px solid var(--pri);line-height:1.3}
+h3{font-size:15px;margin:18px 0 9px}
+p{margin:8px 0}
+table{width:100%;border-collapse:collapse;font-size:12.8px;margin:10px 0}
+th{background:#f1f5f9;text-align:left;padding:8px 10px;border:1px solid var(--line);font-weight:600;color:#334155;white-space:nowrap}
+td{padding:7px 10px;border:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:#fcfdfe}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;background:#eef2ff;color:#4338ca;padding:1px 5px;border-radius:4px;font-size:11.8px;white-space:nowrap}
+.tag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap}
+.t-p0{background:#fee2e2;color:#b91c1c}.t-p1{background:#fef3c7;color:#b45309}.t-p2{background:#e0e7ff;color:#4338ca}
+.t-ok{background:#d1fae5;color:#047857}.t-gap{background:#fee2e2;color:#b91c1c}.t-part{background:#fef3c7;color:#b45309}
+.issue{border:1px solid var(--line);border-left:4px solid var(--amb);border-radius:8px;padding:14px 18px;margin:12px 0;background:#fff}
+.issue.p0{border-left-color:var(--red);background:#fffafa}
+.issue.p2{border-left-color:var(--vio);background:#fafaff}
+.issue h4{margin:0 0 8px;font-size:14.5px}
+.issue .ev{background:#f8fafc;border:1px solid var(--line);border-radius:6px;padding:9px 12px;margin:8px 0;font-size:12.5px;color:var(--sub)}
+.issue .ev b{color:var(--ink)}
+.fix{color:#065f46;background:#ecfdf5;border-radius:5px;padding:7px 11px;font-size:12.8px;margin-top:8px}
+.good{background:#ecfdf5;border-left:4px solid var(--grn);padding:12px 16px;border-radius:7px;font-size:13px;margin:12px 0}
+.warnbox{background:#fff7ed;border-left:4px solid var(--amb);padding:12px 16px;border-radius:7px;font-size:13px;margin:12px 0}
+ul{margin:6px 0;padding-left:20px}li{margin:3px 0}
+.mini{font-size:12px;color:var(--mut)}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0;font-size:12.5px}
+.flow span{padding:5px 10px;border-radius:6px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8}
+.flow i{font-style:normal;color:var(--mut)}
+.footer{text-align:center;color:var(--mut);font-size:12px;margin-top:26px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+  <h1>前后端联合评审报告</h1>
+  <div class="meta">评审对象：<b>前端原型 v1.7（权限与数据修正版）</b> × <b>后端接口设计方案 v1.1（评审修订版）</b>　|　评审时间：<b>2026-11-23 20:43</b>　|　方法：机器扫描 + 逐页逐端点比对 + PG 实库对账</div>
+  <div class="kpis">
+    <div class="kpi"><div class="n">10</div><div class="l">前端页面</div></div>
+    <div class="kpi"><div class="n">35</div><div class="l">后端端点</div></div>
+    <div class="kpi"><div class="n" style="color:#fecaca">2</div><div class="l">P0 承诺无支撑</div></div>
+    <div class="kpi"><div class="n" style="color:#fde68a">4</div><div class="l">P1 契约裂缝</div></div>
+    <div class="kpi"><div class="n" style="color:#c7d2fe">3</div><div class="l">P2 边界说明</div></div>
+  </div>
+</div>
+
+<div class="card">
+<h2>一、总体结论</h2>
+<p><b>主链路对齐，但存在两处"前端承诺了、后端没有"的能力空洞</b>——这不是字段细节，而是界面上明明白白展示给用户、权限矩阵也打勾、后端 35 个端点里却完全不存在的功能。若直接进 D2~D3 开发，首页会退化成静态演示页，导出按钮永远只能弹提示。</p>
+<div class="flow">
+  <span>前端 v1.7 · 10 页面</span><i>→</i><span>35 端点逐条比对</span><i>→</i><span>8 页主链路有支撑</span><i>→</i><span style="background:#fee2e2;border-color:#fecaca;color:#b91c1c">2 页核心内容无端点</span>
+</div>
+<p>好消息是：<b>14 处前端空壳按钮其实后端端点已经现成</b>，只是前端没接——这部分不需要改后端，是纯前端工作量。真正需要后端补的只有 3 类端点（统计概览、变更日志、导出）。</p>
+<div class="good"><b>判定：</b>不建议"原样进入开发"。先按本报告补 <b>后端 v1.2（+3 类端点）</b> 与 <b>前端 v1.8（接 14 处现成端点）</b>，两边并行、互不阻塞，之后即可作为 D2~D6 的联合基线。</div>
+</div>
+
+<div class="card">
+<h2>二、页面—端点覆盖矩阵</h2>
+<table>
+<tr><th>前端页面</th><th>核心交互</th><th>后端端点</th><th>覆盖</th></tr>
+<tr><td><b>工作台首页</b> s-home</td><td>4 统计卡 / 3 待办 / 最近处理 / 导出</td><td>待办可走 <code>GET /goods?price_state</code>、<code>/admin/quarantine</code>、<code>?category_id=C00</code></td><td><span class="tag t-gap">部分</span> 统计/最近处理/导出无端点</td></tr>
+<tr><td><b>价格待补</b> s-fillprice</td><td>待补清单 / 逐条保存 / 转治理</td><td><code>GET /goods?price_state=unpriced</code> + <code>PATCH /goods/{barcode}</code></td><td><span class="tag t-part">主链路✓</span> 转治理属边界外</td></tr>
+<tr><td><b>商品档案</b> s-goods-list</td><td>左树右表 / 查询 / 导出</td><td><code>GET /categories/tree</code> + <code>GET /goods</code></td><td><span class="tag t-part">主链路✓</span> 导出无端点</td></tr>
+<tr><td><b>商品详情</b> s-goods-detail</td><td>点字段改 / 调分类 / 停用</td><td><code>PATCH /goods/{barcode}</code> + <code>POST /goods/{barcode}/category</code> + <code>POST .../status</code></td><td><span class="tag t-ok">完整</span></td></tr>
+<tr><td><b>新增商品</b> s-goods-new</td><td>两段查重 / 建档 / CSV 批量 / 失败清单</td><td><code>POST /goods/check</code> + <code>POST /goods</code> + <code>POST /goods/import</code> + <code>GET /admin/import-jobs/{id}</code></td><td><span class="tag t-ok">完整</span></td></tr>
+<tr><td><b>分类管理</b> s-category</td><td>树维护 / 影响分析 / 外部码对照</td><td><code>PUT /categories/{id}</code> + <code>POST .../impact</code> + <code>GET/PUT .../external-map</code></td><td><span class="tag t-ok">完整</span> 前端未接</td></tr>
+<tr><td><b>条码管理</b> s-barcode</td><td>准入校验 / 别名归并 / 换码</td><td><code>POST /barcodes/validate|alias|reassign</code></td><td><span class="tag t-ok">完整</span> 前端未接</td></tr>
+<tr><td><b>基础字典</b> s-dict</td><td>单位列表 / 新增编辑 / 来源说明</td><td><code>GET/POST /admin/units</code> + <code>GET /admin/sources</code></td><td><span class="tag t-part">缺使用商品数</span></td></tr>
+<tr><td><b>数据治理</b> s-govern</td><td>一码多品清单 / 未分类积压 / 导出</td><td><code>GET /admin/quarantine</code>（实测 138,083 全为 SAME_CODE_DIFF_GOODS）+ <code>GET /goods?category_id=C00</code></td><td><span class="tag t-part">列表✓</span> 导出无端点</td></tr>
+<tr><td><b>用户管理</b> s-users</td><td>查询 / 抽屉 / 新增编辑 / 启停 / 重置密码</td><td><code>GET/POST/PUT /admin/users</code> + <code>POST .../reset-password</code></td><td><span class="tag t-part">缺 phone/活动记录</span></td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2>三、问题清单</h2>
+
+<div class="issue p0">
+<h4><span class="tag t-p0">P0-1</span>　首页统计卡与"最近处理"没有任何后端端点</h4>
+<div class="ev"><b>前端证据：</b><code>s-home</code> 顶部 4 张卡写死 4,325,381 / 13·149 / 53,574 / 197,059；"最近处理"三条含操作人、前后值、时间（今天 09:12 售价 218→220 等）。<br><b>后端证据：</b>35 端点全文扫描 <code>export|dashboard|change-log|activity|stats|summary</code> 关键词 <b>0 命中</b>；<code>sys_change_log</code> 只在写操作里被提到"写"，没有任何读端点。</div>
+<b>影响：</b>首页是系统门面，上线后四个数字永远是硬编码快照，业务做一次补价后数字不会动；"最近处理"永远是三条演示数据——用户会立刻判定"这系统没接真实数据"。
+<div class="fix"><b>建议（后端 v1.2 新增 2 端点）：</b>① <code>GET /admin/dashboard</code> 返回 {goods_total, categories, price_pending, unclassified, todo_counts}，其中业务总量可用 <code>pg_class.reltuples</code> 近似、待办数需精确；② <code>GET /admin/change-log?limit=10</code> 读 <code>sys_change_log</code> 最近变更（含 operator / field / old / new / time），直接喂首页时间轴。</div>
+</div>
+
+<div class="issue p0">
+<h4><span class="tag t-p0">P0-2</span>　"导出数据"三处按钮 + 权限矩阵全打勾，后端无导出端点</h4>
+<div class="ev"><b>前端证据：</b>首页"导出数据"、档案页"导出当前分类的筛选结果"、治理页"导出待处理清单"共 3 处按钮；用户管理权限矩阵明写"导出数据：录入员 ✓ / 管理员 ✓ / 只读 ✓"；20 处 toast 中空壳导出占 3 处。<br><b>后端证据：</b>35 端点无 <code>/export</code> 路径，全文 <code>export</code> 关键词 0 命中。</div>
+<b>影响：</b>权限矩阵承诺了一个不存在的能力——这是<u>契约层面的自相矛盾</u>，比单纯的按钮空壳更严重：开发照矩阵实现权限会发现无端点可挂，测试照矩阵验收会判定失败。
+<div class="fix"><b>建议（后端 v1.2）：</b>① <code>GET /goods/export</code>：流式 CSV、复用 <code>GET /goods</code> 全部过滤参数、字段白名单、Viewer 可导出（金额按定点字符串输出）；② <code>GET /admin/quarantine/export</code>：治理清单导出，同样走 goods_ro；③ 前端权限矩阵保持"三角色可导出"不变，无需回退。</div>
+</div>
+
+<div class="issue">
+<h4><span class="tag t-p1">P1-1</span>　用户管理字段不对齐：phone 与活动记录</h4>
+<div class="ev"><b>前端：</b><code>saveUser()</code> 收集 <code>uf-phone</code>（电话）与 <code>uf-dept</code>，详情抽屉渲染 u.logs「最近活动」；phone/ Dept 在前端共 6 处引用。<br><b>后端：</b><code>GET /admin/users</code> 响应示例为 <code>{account,name,role,status,dept,last_login,permission_codes:[]}</code>——<b>无 phone</b>；端点组描述无用户活动日志读取端点。</div>
+<div class="fix"><b>建议：</b>后端 users 表补 <code>phone</code> 字段并纳入增删改；补 <code>GET /admin/users/{account}/activity</code> 读 <code>sys_change_log</code> 按 operator 过滤；或前端撤掉电话字段与活动区（二选一，不能各留一半）。</div>
+</div>
+
+<div class="issue">
+<h4><span class="tag t-p1">P1-2</span>　单位字典"使用商品数"列无数据来源</h4>
+<div class="ev"><b>前端：</b><code>s-dict</code> 单位表含"使用商品数"列，值取自实库（000007 → 1,694,410 / 000003 → 640,973 / 000001 → 631,888）。<br><b>后端：</b><code>GET /admin/units</code> 描述仅"单位字典列表（22 种编码）"，全文无 <code>goods_count</code> 字段。</div>
+<div class="fix"><b>建议：</b><code>GET /admin/units</code> 增 <code>goods_count</code>。注意 432 万表不能实时 <code>COUNT(*)</code>——建议 m1 建单位字典表时维护物化聚合或在 <code>sys_unit</code> 冗余计数字段，导入任务结束时刷新。</div>
+</div>
+
+<div class="issue">
+<h4><span class="tag t-p1">P1-3</span>　14 处前端 toast 其实后端端点已现成（前端未接）</h4>
+<div class="ev">机器枚举 20 处 toast，逐条对照后发现以下 14 处<b>后端已有对应端点</b>，纯属前端原型未接：</div>
+<table>
+<tr><th>前端 toast 按钮</th><th>可直接调用的现成端点</th></tr>
+<tr><td>在当前分类内按输入条件查询 / 查看未分类商品</td><td><code>GET /goods?q=&amp;category_id=C00</code></td></tr>
+<tr><td>调整影响分析（啤酒 31,088 个商品）</td><td><code>POST /categories/{id}/impact</code></td></tr>
+<tr><td>编辑分类信息 / 设置属性模板</td><td><code>PUT /categories/{id}</code> + <code>PUT /categories/{id}/template</code></td></tr>
+<tr><td>外部编码对照（03000103 ↔ 啤酒）</td><td><code>GET/PUT /categories/{id}/external-map</code></td></tr>
+<tr><td>条码校验 / 提交换码</td><td><code>POST /barcodes/validate</code> + <code>POST /barcodes/reassign</code></td></tr>
+<tr><td>新增单位 / 3 处编辑单位</td><td><code>POST /admin/units</code> + <code>PUT /admin/units/{code}</code></td></tr>
+<tr><td>下载 CSV 模板 / 导入说明 / 校验进度 / 失败清单</td><td><code>POST /goods/import</code> + <code>GET /admin/import-jobs/{id}</code></td></tr>
+</table>
+<div class="fix"><b>建议：</b>列为前端 v1.8 明确清单，<b>不需要动后端</b>。其中"外部编码对照"是评审报告 v1.0 → v1.1 刚补的端点，前端还没跟上，优先接。</div>
+</div>
+
+<div class="issue">
+<h4><span class="tag t-p1">P1-4</span>　前端"按条件查询"仍不真过滤（v1.6 评审第二批遗留）</h4>
+<div class="ev"><code>s-goods-list</code> 的查询按钮仍是 <code>onclick="toast('在当前分类内按输入条件查询')"</code>；治理页"查看积压商品"仍是 toast 不跳转。后端 <code>GET /goods</code> 已完整支持 <code>q / category_id / source / grade / status / price_state</code> 全部过滤参数。</div>
+<div class="fix"><b>建议：</b>随 P1-3 一并接入，这是前端单方工作量；参数名已与后端对齐，无需契约变更。</div>
+</div>
+
+<div class="issue p2">
+<h4><span class="tag t-p2">P2-1</span>　"转治理处理 / 类目增设提案"属方案边界外，需在原型标注</h4>
+<div class="ev">补价页"先确认商品 → 转治理处理"、治理页"类目增设提案"、字典页来源说明的"规则自动采用"均指向数据治理流程。方案二 v3.5 明确治理裁决不在本期。</div>
+<div class="fix"><b>建议：</b>前端这两个按钮灰化并加提示"跳转治理系统（本期不实现）"，避免开发误判为接口漏做。</div>
+</div>
+
+<div class="issue p2">
+<h4><span class="tag t-p2">P2-2</span>　前端角色切换是纯演示，需在方案写明生产口径</h4>
+<div class="ev">前端 <code>switchRole()</code> 直接切视角 DOM；后端用 JWT claim + <code>Depends(require_role)</code> 强制。设计本身正确（前端守卫只是体验，后端才是防线），但接口方案未写明这一点。</div>
+<div class="fix"><b>建议：</b>在 v1.2 安全章节补一句"前端角色切换仅原型演示，生产权限一律以 JWT claim 为准，前端传入的 role 字段不采信"。</div>
+</div>
+
+<div class="issue p2">
+<h4><span class="tag t-p2">P2-3</span>　档位命名映射需在文档固定</h4>
+<div class="ev">前端三档：只读 / 录入员 / 管理员；后端三档：Viewer / Operator / Steward。语义一致但字面不同，<code>/admin/users</code> 的请求体 role 字段取值未明示。</div>
+<div class="fix"><b>建议：</b>接口方案补一张固定映射表：<code>只读=Viewer、录入员=Operator、管理员=Steward</code>，并规定请求体只接受英文枚举。</div>
+</div>
+
+</div>
+
+<div class="card">
+<h2>四、确认通过项（11 项）</h2>
+<div class="good">
+<ul>
+<li><b>主链路覆盖：</b>10 个页面中 8 个核心操作全部有端点，商品详情、新增商品、分类管理、条码管理四个页面完整对齐</li>
+<li><b>两段查重契约：</b>后端 verdict 三态 PASS/WARN/BLOCK 与前端红/黄/绿反馈一一对应，粒度到"同名命中 40.6% 基数不自动合并"</li>
+<li><b>字段即点即改白名单：</b>后端 <code>field</code> 仅允许 goods_name/inprice/outprice/unit_id，与前端可编辑字段完全一致；分类/状态/条码分别走独立端点</li>
+<li><b>分类树数据契约：</b>171 节点 / 162 启用 / 13 大类 / 149 小类 / C00 占位 197,059，前后端同源同数（合计对账 4,325,381）</li>
+<li><b>分类调整弹窗：</b>前端 v1.7 新落的 <code>openCatPicker/saveCatPick</code> ↔ <code>POST /goods/{barcode}/category</code> 对齐</li>
+<li><b>状态流转权限：</b>前端"停用"仅管理员可见 ↔ 后端 <code>/status</code> 为 Steward，口径一致</li>
+<li><b>批量导入闭环：</b>模板 / 500 行每批 / 失败清单 ↔ <code>POST /goods/import</code> + <code>GET /admin/import-jobs/{id}</code></li>
+<li><b>用户管理闭环：</b>统计卡 / 真查询 / 抽屉 / 新增编辑 / 启停 / 重置密码全部有端点，统计卡由列表聚合的实现约定也写了</li>
+<li><b>一码多品数字：</b>前端 138,083 ↔ 后端 <code>GET /admin/quarantine</code>，PG 实测隔离区 138,083 条<b>全部</b>为 <code>SAME_CODE_DIFF_GOODS</code>，口径完全一致</li>
+<li><b>权限双层防线：</b>前端三档菜单守卫 + 后端 JWT 角色强制，v1.7 修掉的"权限穿透"在接口层再兜一道</li>
+<li><b>铁律前后端一致：</b>条码建档后不可改、VOIDED 联动 90 天禁复用、查重 BLOCK 不可跳过——前端提示文案与后端守卫规则逐条对应</li>
+</ul>
+</div>
+</div>
+
+<div class="card">
+<h2>五、修订建议与顺序</h2>
+<table>
+<tr><th>线路</th><th>版本</th><th>动作</th><th>阻塞关系</th></tr>
+<tr><td><b>后端</b></td><td>v1.2</td><td>补 3 类端点：<code>/admin/dashboard</code>、<code>/admin/change-log</code>、<code>/goods/export</code> + <code>/admin/quarantine/export</code>；users 补 phone + activity；units 补 goods_count；写明角色映射与 JWT 口径</td><td>不阻塞前端 v1.8</td></tr>
+<tr><td><b>前端</b></td><td>v1.8</td><td>接 14 处现成端点（外部码映射优先）+ 查询真过滤 + 未分类跳转 + 治理按钮灰化标注</td><td>不阻塞后端 v1.2</td></tr>
+<tr><td><b>联合</b></td><td>D2~D3</td><td>两条线完成后，以 v1.2 + v1.8 为联合基线启动 FastAPI 骨架与 Vue3 骨架</td><td>依赖前两行</td></tr>
+</table>
+<p class="mini">评审依据：前端原型 v1.7（本地 /tmp 与远程 09_管理系统/prototype/）、后端接口设计方案 v1.1（远程 04_正式方案/）、架构方案 v1.1、PostgreSQL 14.23 goods_mdm 实库（13 表、约束、枚举、隔离区问题类型分布实测）。</p>
+</div>
+
+<div class="footer">商品主数据管理系统 · 前后端联合评审 · 2026-11-23</div>
+</div>
+</body>
+</html>

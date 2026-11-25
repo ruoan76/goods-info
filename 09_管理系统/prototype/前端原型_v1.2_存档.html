@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品主数据管理系统 · 前端原型 v1.2（业务易用版）</title>
+<style>
+:root{--primary:#409eff;--success:#67c23a;--warning:#e6a23c;--danger:#f56c6c;--info:#909399;--text:#303133;--text2:#606266;--text3:#909399;--border:#dcdfe6;--bg:#f5f7fa;--sidebar:#1d2535}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:13px;color:var(--text);background:var(--bg)}
+button{font-family:inherit;cursor:pointer;border:none;font-size:13px}
+input,select{font-family:inherit;font-size:13px;outline:none}
+#login{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#1d2535,#2b3a55)}
+.login-box{background:#fff;border-radius:10px;padding:36px 40px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-box h2{font-size:18px;margin-bottom:4px}
+.login-box .sub{color:var(--text3);font-size:12px;margin-bottom:24px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px}
+.field input{width:100%;height:34px;border:1px solid var(--border);border-radius:4px;padding:0 10px}
+.field input:focus{border-color:var(--primary)}
+.btn{height:34px;padding:0 18px;border-radius:4px;background:var(--primary);color:#fff}
+.btn.block{width:100%;height:38px;font-size:14px}
+.btn.plain{background:#fff;color:var(--text2);border:1px solid var(--border)}
+.btn.danger{background:var(--danger)}
+.btn.warn{background:var(--warning)}
+.btn.sm{height:28px;padding:0 12px;font-size:12px}
+.login-tip{margin-top:14px;font-size:11px;color:var(--text3);text-align:center}
+#app{display:none;height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:210px;background:var(--sidebar);color:#aeb6c5;overflow-y:auto}
+.sidebar .logo{padding:18px 20px;color:#fff;font-size:15px;font-weight:600;border-bottom:1px solid #2b3548}
+.nav-group{padding:6px 0}
+.nav-group .gt{font-size:10px;color:#5d6778;padding:6px 20px;letter-spacing:1px}
+.nav-group.admin{border-top:1px solid #2b3548;margin-top:6px}
+.nav-group.admin .gt{color:#8a6d3b}
+.nav-item{padding:10px 20px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.nav-item:hover{background:#2b3548;color:#fff}
+.nav-item.active{background:var(--primary);color:#fff}
+.nav-item .adm{font-size:10px;background:#3a465f;color:#9fb3d9;padding:1px 6px;border-radius:8px}
+.main{margin-left:210px;height:100vh;display:flex;flex-direction:column}
+.topbar{height:50px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.topbar .crumb{color:var(--text3);font-size:12px}
+.topbar .crumb b{color:var(--text);font-weight:600}
+.userbox{display:flex;align-items:center;gap:10px;font-size:12px}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px}
+.role-tag{background:#f0f9eb;color:var(--success);padding:2px 8px;border-radius:10px;font-size:11px}
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+.page-title{font-size:16px;font-weight:600;margin-bottom:4px}
+.page-desc{font-size:12px;color:var(--text3);margin-bottom:16px}
+.card{background:#fff;border-radius:6px;border:1px solid var(--border);padding:16px 20px;margin-bottom:16px}
+.card h3{font-size:14px;margin-bottom:12px}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.filter-row input,.filter-row select{height:32px;border:1px solid var(--border);border-radius:4px;padding:0 10px}
+.filter-row input{width:220px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid #ebeef5}
+th{background:#fafbfc;color:var(--text3);font-weight:600;white-space:nowrap}
+tr:hover td{background:#f5f7fa}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;white-space:nowrap}
+.tg-blue{background:#ecf5ff;color:var(--primary)}.tg-green{background:#f0f9eb;color:var(--success)}.tg-orange{background:#fdf6ec;color:var(--warning)}.tg-red{background:#fef0f0;color:var(--danger)}.tg-gray{background:#f4f4f5;color:var(--info)}.tg-violet{background:#f5f0ff;color:#7c3aed}
+.pager{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:12px;font-size:12px;color:var(--text3)}
+.pager button{width:28px;height:28px;border:1px solid var(--border);background:#fff;border-radius:4px}
+.pager button.cur{background:var(--primary);color:#fff;border-color:var(--primary)}
+.tip-note{background:#f0f9eb;border-left:3px solid var(--success);padding:8px 12px;font-size:12px;color:#4a7a2a;border-radius:4px;margin-bottom:12px}
+.tip-note.warn{background:#fdf6ec;border-color:var(--warning);color:#8a6d3b}
+.tip-note b{color:var(--success)}
+.screen{display:none}
+.screen.active{display:block}
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start}
+.detail-head .bc{font-size:18px;font-weight:700;font-family:ui-monospace,Menlo,monospace}
+.detail-head .meta{color:var(--text3);font-size:12px;margin-top:4px}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin:16px 0 0}
+.tab{padding:10px 18px;cursor:pointer;font-size:13px;border-bottom:2px solid transparent;color:var(--text2)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.tab-pane{display:none;padding-top:16px}
+.tab-pane.active{display:block}
+.kv{display:grid;grid-template-columns:120px 1fr 120px 1fr;gap:8px 12px;font-size:12.5px}
+.kv .k{color:var(--text3)}
+.sysinfo{margin-top:14px;padding-top:10px;border-top:1px dashed var(--border);font-size:11.5px;color:var(--text3);line-height:1.9}
+.steps{display:flex;margin-bottom:20px;max-width:460px}
+.step{flex:1;text-align:center;position:relative;color:var(--text3);font-size:12px}
+.step .dot{width:26px;height:26px;border-radius:50%;background:#e4e7ed;color:#fff;display:inline-flex;align-items:center;justify-content:center;margin-bottom:4px;font-size:12px}
+.step.on .dot{background:var(--primary)}
+.step.on{color:var(--primary);font-weight:600}
+.step::after{content:'';position:absolute;top:13px;left:calc(50% + 18px);width:calc(100% - 40px);height:2px;background:#e4e7ed}
+.step:last-child::after{display:none}
+.check-ok{background:#f0f9eb;border:1px solid #e1f3d8;border-radius:6px;padding:12px 14px;font-size:12.5px;color:#4a7a2a;margin-top:10px}
+.check-conflict{background:#fef0f0;border:1px solid #fde2e2;border-radius:6px;padding:12px 14px;font-size:12.5px;color:#a15555;margin-top:10px}
+.check-conflict b{color:var(--danger)}
+.check-samename{background:#fdf6ec;border:1px solid #faecd8;border-radius:6px;padding:12px 14px;font-size:12.5px;color:#8a6d3b;margin-top:10px}
+.tree-layout{display:grid;grid-template-columns:300px 1fr;gap:16px}
+.tree{font-size:12.5px;user-select:none}
+.tree .node{padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.tree .node:hover{background:#f5f7fa}
+.tree .node.sel{background:#ecf5ff;color:var(--primary)}
+.tree .children{padding-left:18px;border-left:1px dashed #e4e7ed;margin-left:8px}
+.tree .caret{color:var(--text3);font-size:10px;width:12px}
+.tree .c00{color:var(--text3);background:#f4f4f5;border-radius:4px}
+.tree .c00 .ph{font-size:10px;background:#e4e7ed;color:var(--text3);padding:0 6px;border-radius:8px}
+.toast{position:fixed;top:60px;right:24px;background:#fff;border-left:3px solid #409eff;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:12px 18px;font-size:13px;border-radius:4px;z-index:200;display:none}
+.proto-banner{position:fixed;bottom:0;left:210px;right:0;background:#1d2535;color:#8fa0c0;font-size:11px;padding:6px 20px;display:flex;justify-content:space-between;z-index:50}
+.proto-banner b{color:#c6d4f0}
+.dyn-form .fitem{margin-bottom:12px}
+.dyn-form label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px}
+.dyn-form label .req{color:var(--danger)}
+.dyn-form input{width:320px;height:32px;border:1px solid var(--border);border-radius:4px;padding:0 10px}
+.dyn-form select{width:320px;height:32px;border:1px solid var(--border);border-radius:4px;padding:0 10px}
+.zero{color:var(--danger);font-weight:600}
+.history-item{border-left:2px solid var(--primary);padding:8px 0 8px 14px;margin-left:6px;position:relative}
+.history-item::before{content:'';position:absolute;left:-5px;top:14px;width:8px;height:8px;border-radius:50%;background:var(--primary)}
+.history-item .ht{font-size:12px;color:var(--text3)}
+.history-item .hb{font-size:12.5px;margin-top:2px}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="login-box">
+    <h2>商品主数据管理系统</h2>
+    <div class="sub">日常查商品、改商品、加商品，都在这里</div>
+    <div class="field"><label>用户名</label><input value="zhang.san" readonly></div>
+    <div class="field"><label>密码</label><input type="password" value="********" readonly></div>
+    <button class="btn block" onclick="enterApp()">登 录</button>
+    <div class="login-tip">当前角色：录入员（查询 · 建档 · 维护）· 原型模拟登录</div>
+  </div>
+</div>
+
+<div id="app">
+  <aside class="sidebar">
+    <div class="logo">商品主数据管理系统</div>
+    <div class="nav-group"><div class="gt">商品工作台</div>
+      <div class="nav-item active" data-s="goods-list" onclick="go(this)">商品档案</div>
+      <div class="nav-item" data-s="goods-new" onclick="go(this)">新增商品</div>
+    </div>
+    <div class="nav-group admin"><div class="gt">管理后台 · 管理员使用</div>
+      <div class="nav-item" data-s="category" onclick="go(this)">分类与属性模板 <span class="adm">管理员</span></div>
+      <div class="nav-item" data-s="barcode" onclick="go(this)">条码管理 <span class="adm">管理员</span></div>
+      <div class="nav-item" data-s="admin" onclick="go(this)">字典与用户 <span class="adm">管理员</span></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb" id="crumb">商品工作台 / <b>商品档案</b></div>
+      <div class="userbox"><span class="role-tag">录入员</span><div class="avatar">张</div><span>zhang.san</span><button class="btn plain sm" onclick="location.reload()">退出</button></div>
+    </div>
+    <div class="content">
+
+      <!-- 商品列表 -->
+      <div class="screen active" id="s-goods-list">
+        <div class="page-title">商品档案</div>
+        <div class="page-desc">共 432 万余种商品 · 输入条码或名称即可查找</div>
+        <div class="card">
+          <div class="filter-row">
+            <input placeholder="条码或商品名称" value="青岛啤酒">
+            <select><option>全部分类</option><option>休闲零食</option><option>饼干糕点</option><option>啤酒</option><option>未分类</option></select>
+            <select><option>全部状态</option><option>在售</option><option>已停用</option><option>已作废</option></select>
+            <select><option>价格不限</option><option>有价格</option><option>价格待补</option></select>
+            <button class="btn sm">查询</button>
+            <button class="btn plain sm" onclick="toast('导出当前筛选结果为 Excel/CSV 文件')">导出</button>
+            <button class="btn plain sm" onclick="go(document.querySelector('[data-s=goods-new]'))">+ 新增商品</button>
+          </div>
+          <table>
+            <tr><th>条码</th><th>商品名称</th><th>分类</th><th>售价</th><th>状态</th><th>操作</th></tr>
+            <tr style="cursor:pointer" onclick="showDetail()"><td style="font-family:Menlo">6901035623162</td><td>青岛啤酒经典1903-9度258毫升*6*4复古装箱啤</td><td>啤酒</td><td>¥220.00</td><td><span class="tag tg-green">在售</span></td><td><a style="color:var(--primary);cursor:pointer">详情</a></td></tr>
+            <tr><td style="font-family:Menlo">6901035621144</td><td>青岛啤酒经典10度500毫升*12工行定制罐啤</td><td>啤酒</td><td class="zero">价格待补</td><td><span class="tag tg-green">在售</span></td><td><a style="color:var(--primary);cursor:pointer">详情</a></td></tr>
+            <tr><td style="font-family:Menlo">6901180953213</td><td>早餐饼干</td><td>饼干糕点</td><td>¥10.00</td><td><span class="tag tg-green">在售</span></td><td><a style="color:var(--primary);cursor:pointer">详情</a></td></tr>
+            <tr><td style="font-family:Menlo">6901180950380</td><td>443g果乐果香凤梨味果酱夹心饼干</td><td>饼干糕点</td><td>¥17.80</td><td><span class="tag tg-green">在售</span></td><td><a style="color:var(--primary);cursor:pointer">详情</a></td></tr>
+            <tr><td style="font-family:Menlo">9787534296482</td><td>2047瞎了眼的灯塔</td><td><span class="tag tg-gray">未分类</span></td><td>—</td><td><span class="tag tg-green">在售</span></td><td><a style="color:var(--primary);cursor:pointer">详情</a></td></tr>
+          </table>
+          <div class="tip-note warn" style="margin-top:12px;margin-bottom:0">提示：部分商品<b>价格待补</b>（约 5.4 万条，价格为 0 或未填，需业务确认处理方式）；另有约 20 万条商品<b>暂未分类</b>（含一批书籍类商品）</div>
+          <div class="pager">共 4,325,381 条<button>‹</button><button class="cur">1</button><button>2</button><button>3</button><button>…</button><button>432,539</button><button>›</button></div>
+        </div>
+      </div>
+
+      <!-- 商品详情 -->
+      <div class="screen" id="s-goods-detail">
+        <div class="page-title">商品详情</div>
+        <div class="card">
+          <div class="detail-head">
+            <div>
+              <div class="bc">青岛啤酒经典1903-9度258毫升*6*4复古装箱啤</div>
+              <div class="meta">条码 6901035623162 · 分类：啤酒</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <span class="tag tg-green" style="font-size:12px;padding:4px 12px">在售</span>
+              <button class="btn sm" onclick="toast('进入编辑：修改名称、价格等信息，改动会记录到历史')">编辑</button>
+              <button class="btn warn sm" onclick="toast('停用后商品不再对外使用，但记录完整保留，可随时恢复')">停用</button>
+              <button class="btn plain sm" onclick="toast('作废需管理员确认；作废后的条码 90 天内不能再次使用')">作废</button>
+            </div>
+          </div>
+          <div class="tabs">
+            <div class="tab active" onclick="tab(this,'d1')">基本信息</div>
+            <div class="tab" onclick="tab(this,'d3')">商品属性</div>
+            <div class="tab" onclick="tab(this,'d4')">历史记录</div>
+          </div>
+          <div class="tab-pane active" id="d1">
+            <div class="kv" style="margin-top:8px">
+              <span class="k">条码</span><span style="font-family:Menlo">6901035623162（13 位）</span>
+              <span class="k">单位</span><span>待确认 <span class="tag tg-orange">编码 000002，含义待业务确认</span></span>
+              <span class="k">分类</span><span>食品 → 酒类 → 啤酒</span>
+              <span class="k">状态</span><span><span class="tag tg-green">在售</span></span>
+              <span class="k">进价</span><span>¥ 130.00</span>
+              <span class="k">售价</span><span>¥ 220.00</span>
+            </div>
+            <div class="sysinfo">
+              系统信息（供参考）：数据来源 人工核对 · 数据可信度 高 · 数据质量 96 分 · 2026-11-22 由外部商品表导入
+            </div>
+          </div>
+          <div class="tab-pane" id="d3">
+            <div class="tip-note"><b>商品属性</b>：按「啤酒」分类的属性要求填写，带 <span style="color:var(--danger)">*</span> 的为必填项</div>
+            <div class="dyn-form">
+              <div class="fitem"><label>净含量 (ml) <span class="req">*</span></label><input value="258×6×4"></div>
+              <div class="fitem"><label>包装形态 <span class="req">*</span></label><input value="箱装"></div>
+              <div class="fitem"><label>酒精度 (%)</label><input value="9.0"></div>
+              <button class="btn sm" onclick="toast('保存成功 · 本次修改已记录到历史')">保存属性</button>
+            </div>
+          </div>
+          <div class="tab-pane" id="d4">
+            <div class="tip-note">本页展示这条商品的每次变动：谁、什么时候、改了什么、依据是什么</div>
+            <div class="history-item"><div class="ht">2026-11-22 · 系统导入</div><div class="hb">从「商品信息表」导入（两个来源不一致时，采用更可靠的那个：商品信息表 > 合并表）</div></div>
+            <div class="history-item"><div class="ht">2026-11-22 · 系统整理</div><div class="hb">名称、条码确认无误；分类依据关键词词典判定为「啤酒」（人工核对规则，可信度高）</div></div>
+            <div class="history-item"><div class="ht">— · 无其他修改</div><div class="hb" style="color:var(--text3)">该商品建档后未被人工修改过</div></div>
+          </div>
+        </div>
+        <button class="btn plain sm" onclick="go(document.querySelector('[data-s=goods-list]'))">← 返回列表</button>
+      </div>
+
+      <!-- 新增商品（两步） -->
+      <div class="screen" id="s-goods-new">
+        <div class="page-title">新增商品</div>
+        <div class="page-desc">只需两步：输入条码 → 填写信息。系统会自动检查是否已有此商品</div>
+        <div class="card">
+          <div class="steps">
+            <div class="step on" id="w1"><span class="dot">1</span><br>输入条码</div>
+            <div class="step" id="w2"><span class="dot">2</span><br>填写信息</div>
+          </div>
+          <div class="field" style="max-width:420px"><label>商品条码（包装上印的数字）</label>
+            <div style="display:flex;gap:8px"><input id="nb" style="flex:1" placeholder="试试 6901035623162 / 9787534296482 / 6931234567890" value="6931234567890"><button class="btn" onclick="doCheck()">下一步</button></div>
+          </div>
+          <div id="check-result"></div>
+          <div id="next-step" style="display:none;margin-top:16px">
+            <div class="tip-note">条码可用，请补充商品信息</div>
+            <div class="dyn-form">
+              <div class="fitem"><label>商品名称 <span class="req">*</span></label><input placeholder="如：青岛啤酒经典1903 500毫升*12"></div>
+              <div class="fitem"><label>分类 <span class="req">*</span></label><select><option>请选择分类</option><option>食品 → 酒类 → 啤酒</option><option>食品 → 休闲零食</option><option>食品 → 饼干糕点</option></select></div>
+              <div class="fitem"><label>单位</label><select><option>待确认（编码 000007）</option></select></div>
+              <div class="fitem"><label>进价（元）</label><input placeholder="0.00"></div>
+              <div class="fitem"><label>售价（元）</label><input placeholder="0.00"></div>
+              <button class="btn" onclick="toast('建档成功 · 商品已保存，后续可随时修改')">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分类与属性模板（管理后台） -->
+      <div class="screen" id="s-category">
+        <div class="page-title">分类与属性模板</div>
+        <div class="page-desc">13 个大类 / 158 个小类 · 商品实际使用 147 类 · 面向管理员</div>
+        <div class="tree-layout">
+          <div class="card" style="margin:0">
+            <h3>分类树（食品 / 酒类 展开）</h3>
+            <div class="tree">
+              <div class="node"><span class="caret">▾</span><b>食品</b></div>
+              <div class="children">
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>休闲零食 <span class="tag tg-gray">574,031</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>糖果巧克力 <span class="tag tg-gray">95,534</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>饼干糕点 <span class="tag tg-gray">112,252</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>坚果蜜饯肉干 <span class="tag tg-gray">66,676</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>方便速食 <span class="tag tg-gray">112,618</span></div>
+              </div>
+              <div class="node"><span class="caret">▾</span><b>酒类</b></div>
+              <div class="children">
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>白酒 <span class="tag tg-gray">253,273</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>葡萄酒 <span class="tag tg-gray">66,234</span></div>
+                <div class="node sel" onclick="selCat(this)"><span class="caret">▸</span>啤酒 <span class="tag tg-gray">31,088</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>黄酒 <span class="tag tg-gray">6,246</span></div>
+                <div class="node" onclick="selCat(this)"><span class="caret">▸</span>洋酒 <span class="tag tg-gray">13,754</span></div>
+              </div>
+              <div class="node"><span class="caret">▸</span>生鲜冷品</div>
+              <div class="node"><span class="caret">▸</span>饮料</div>
+              <div class="node"><span class="caret">▸</span>数码五金</div>
+              <div class="node c00" title="系统占位分类，不能新增商品到此类"><span class="caret">▪</span>未分类 <span class="ph">系统占位</span><span class="tag tg-gray">197,059</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <h3>啤酒 <span class="tag tg-green">使用中</span></h3>
+              <div class="kv">
+                <span class="k">所属</span><span>食品 → 酒类 → 啤酒</span>
+                <span class="k">商品数</span><span>31,088（实时统计）</span>
+                <span class="k">属性模板</span><span>未设置（可设置该类商品需填哪些属性，如净含量、包装形态）</span>
+              </div>
+              <div style="margin-top:14px;display:flex;gap:8px">
+                <button class="btn sm" onclick="toast('调整影响分析：「啤酒」类目下有 31,088 个商品。调整前系统会自动检查影响范围，有商品的分类不能直接删除')">调整影响分析</button>
+                <button class="btn plain sm" onclick="toast('编辑分类信息 / 设置属性模板（需管理员角色）')">编辑 / 设置属性模板</button>
+                <button class="btn plain sm" onclick="toast('外部编码对照：外部系统编码 03000103 ↔ 啤酒（共 349 条对照关系之一）')">外部编码对照</button>
+              </div>
+            </div>
+            <div class="tip-note warn" style="margin-top:0"><b>「未分类」说明</b>：约 19.7 万条暂未分类的商品集中在这里（含书籍类商品积压）。它是系统自动归置的仓库，不能往里新增商品，也不能删除。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 条码管理（管理后台） -->
+      <div class="screen" id="s-barcode">
+        <div class="page-title">条码管理</div>
+        <div class="page-desc">条码检查 · 换码登记 · 多包装条码归并 · 面向管理员</div>
+        <div class="card">
+          <h3>条码检查</h3>
+          <div class="filter-row">
+            <input id="ba" style="width:240px" placeholder="输入条码" value="6901035623162">
+            <button class="btn sm" onclick="toast('检查结果：✓ 格式正确（13 位商品条码）· ✓ 无使用限制 · 注意：该条码已有商品（青岛啤酒经典1903…）')">检查</button>
+          </div>
+          <div class="tip-note">系统自动检查 4 项：① 条码格式（8 位或 13 位商品条码）② 是否在使用限制期内（作废后 90 天内不能复用）③ 是否已归并到其他主条码 ④ 是否为书号（书籍编号，不是商品条码）</div>
+        </div>
+        <div class="card">
+          <h3>换码登记 <button class="btn plain sm" onclick="toast('提交换码：旧条码自动登记为「旧码」，90 天内不能被其他商品使用')">提交换码</button></h3>
+          <div class="filter-row">
+            <input style="width:180px" placeholder="旧条码" value="6904444555566">
+            <span style="color:var(--text3)">→</span>
+            <input style="width:180px" placeholder="新主条码" value="6905555666677">
+            <select style="height:32px"><option>换码（旧码换新码）</option><option>多包装（大包装条码）</option></select>
+          </div>
+        </div>
+        <div class="card">
+          <h3>已登记条码</h3>
+          <table>
+            <tr><th>条码</th><th>主条码</th><th>类型</th><th>使用限制</th><th>登记时间</th></tr>
+            <tr><td style="font-family:Menlo">6901111222233</td><td style="font-family:Menlo">6901035623162</td><td><span class="tag tg-blue">多包装</span></td><td>—</td><td>2026-11-23</td></tr>
+            <tr><td style="font-family:Menlo">6904444555566</td><td style="font-family:Menlo">6901180953213</td><td><span class="tag tg-orange">换码旧码</span></td><td><span class="tag tg-red">2027-02-21 前不能复用</span></td><td>2026-11-23</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- 字典与用户（管理后台） -->
+      <div class="screen" id="s-admin">
+        <div class="page-title">字典与用户</div>
+        <div class="page-desc">单位字典 · 数据来源说明 · 待处理清单 · 用户与角色 · 面向管理员</div>
+        <div class="card">
+          <h3>单位字典 <span class="tag tg-orange">名称待业务确认</span></h3>
+          <div class="tip-note warn">单位编码含义尚未确认：以下名称仅为示意，正式名称须业务确认后录入（库中共 22 种单位编码）</div>
+          <table>
+            <tr><th>编码</th><th>名称（示意）</th><th>使用商品数</th></tr>
+            <tr><td style="font-family:Menlo">000007</td><td>（待确认）</td><td>1,694,410</td></tr>
+            <tr><td style="font-family:Menlo">000003</td><td>（待确认）</td><td>640,973</td></tr>
+            <tr><td style="font-family:Menlo">000001</td><td>（待确认）</td><td>631,888</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>数据来源说明</h3>
+          <table>
+            <tr><th>来源</th><th>可靠程度</th><th>说明</th></tr>
+            <tr><td>商品信息表</td><td><span class="tag tg-green">更可靠</span>（0.90）</td><td>两个来源数据打架时，优先采用此表</td></tr>
+            <tr><td>合并表</td><td><span class="tag tg-orange">次可靠</span>（0.70）</td><td>仅在前者缺失时采用</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>待处理清单 <span class="tag tg-gray">只读 · 处理归数据治理流程</span></h3>
+          <div class="tip-note">「一码多品」冲突：同一个条码对应了不同商品，共 138,083 条待治理流程裁决。本系统仅提供查询，不在此处理。</div>
+          <table>
+            <tr><th>条码</th><th>问题类型</th><th>状态</th><th>发现时间</th></tr>
+            <tr><td style="font-family:Menlo">6920202888901</td><td><span class="tag tg-orange">一码多品</span></td><td><span class="tag tg-gray">待处理</span></td><td>2026-11-22 导入时发现</td></tr>
+            <tr><td style="font-family:Menlo">6920202888902</td><td><span class="tag tg-orange">一码多品</span></td><td><span class="tag tg-gray">待处理</span></td><td>2026-11-22 导入时发现</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>用户与角色</h3>
+          <table>
+            <tr><th>用户</th><th>角色</th><th>能做什么</th></tr>
+            <tr><td>zhang.san</td><td><span class="tag tg-blue">录入员</span></td><td>查询商品、新增商品、修改商品信息和属性</td></tr>
+            <tr><td>li.si</td><td><span class="tag tg-violet">类目管理员</span></td><td>管理分类、属性模板、停用/作废商品、管理用户</td></tr>
+            <tr><td>wang.wu</td><td><span class="tag tg-gray">只读</span></td><td>只能查看</td></tr>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="proto-banner"><span><b>交互原型 v1.2（业务易用版）</b> · 数据与真实库一致（啤酒 31,088 / 休闲零食 574,031 等）· 界面用语面向业务人员</span><span>系统自动：防重复建档 · 记录每次改动 · 停用可恢复</span></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function go(el){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));el.classList.add('active');
+const s=el.dataset.s;document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+const map={'goods-list':'s-goods-list','goods-new':'s-goods-new','category':'s-category','barcode':'s-barcode','admin':'s-admin'};
+document.getElementById(map[s]).classList.add('active');
+const g=el.closest('.nav-group').querySelector('.gt').textContent.replace(' · 管理员使用','');
+document.getElementById('crumb').innerHTML=g+' / <b>'+el.textContent.replace('管理员','').trim()+'</b>';}
+function showDetail(){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-goods-detail').classList.add('active');document.getElementById('crumb').innerHTML='商品工作台 / <b>商品详情 · 青岛啤酒经典1903</b>';}
+function tab(el,p){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.tab-pane').forEach(t=>t.classList.remove('active'));document.getElementById(p).classList.add('active');}
+function selCat(el){document.querySelectorAll('.tree .node').forEach(n=>n.classList.remove('sel'));el.classList.add('sel');}
+function doCheck(){const bc=document.getElementById('nb').value;const r=document.getElementById('check-result');
+let html='';
+if(bc==='6901035623162'){html='<div class="check-conflict"><b>✗ 该条码已有商品</b><br>6901035623162 已存在：<b>青岛啤酒经典1903-9度258毫升*6*4复古装箱啤</b>（啤酒，在售）。不能重复建档，请直接查看已有商品。试试其他条码：9787534296482 / 6931234567890</div>';document.getElementById('next-step').style.display='none';w2off();}
+else if(bc==='9787534296482'){html='<div class="check-samename"><b>⚠ 这是书号，不是商品条码</b><br>978/979 开头的是书籍编号。库中已有此书（《2047瞎了眼的灯塔》，暂未分类）。如需收录书籍类商品，请联系管理员扩充分类。</div>';document.getElementById('next-step').style.display='none';w2off();}
+else{html='<div class="check-ok">✓ 条码可用（格式正确、无使用限制）</div><div class="check-samename" style="margin-top:8px"><b>提醒：库中有同名商品</b><br>如果这其实是同一商品的不同包装/规格，建议直接在原商品上补充条码，不要新建（可联系管理员处理）。</div>';document.getElementById('next-step').style.display='block';document.getElementById('w2').classList.add('on');}
+r.innerHTML=html;}
+function w2off(){document.getElementById('w2').classList.remove('on');}
+function enterApp(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';}
+let t;function toast(m){const e=document.getElementById('toast');e.textContent=m;e.style.display='block';clearTimeout(t);t=setTimeout(()=>e.style.display='none',3400);}
+</script>
+</body>
+</html>

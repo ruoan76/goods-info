@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>前端原型 v1.6 全面评审报告</title>
+<style>
+:root{--primary:#409eff;--success:#67c23a;--warning:#e6a23c;--danger:#f56c6c;--info:#909399;--text:#303133;--text2:#606266;--text3:#909399;--border:#dcdfe6;--bg:#f5f7fa}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:13.5px;line-height:1.75;color:var(--text);background:var(--bg)}
+.wrap{max-width:1000px;margin:0 auto;padding:28px 20px 60px}
+.hd{background:#1d2535;color:#fff;border-radius:10px 10px 0 0;padding:30px 36px}
+.hd h1{font-size:21px;font-weight:600;margin-bottom:8px}
+.hd .meta{font-size:12px;color:#9fb3d9;line-height:2}
+.hd .meta b{color:#c6d4f0}
+.body{background:#fff;border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:30px 36px}
+h2{font-size:16px;font-weight:600;margin:32px 0 14px;padding-left:11px;border-left:3px solid var(--primary)}
+h2:first-child{margin-top:0}
+h3{font-size:14px;font-weight:600;margin:20px 0 10px;color:var(--text2)}
+p{margin:9px 0;color:var(--text2)}
+.verdict{background:#f0f9eb;border:1px solid #e1f3d8;border-left:4px solid var(--success);border-radius:6px;padding:16px 20px;margin:4px 0 8px}
+.verdict b{color:#4a7a2a;font-size:14px}
+.verdict .score{display:flex;gap:26px;margin-top:12px;flex-wrap:wrap}
+.verdict .score div{font-size:12.5px;color:var(--text2)}
+.verdict .score b{font-size:19px;color:var(--text);display:block}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin:12px 0}
+th,td{text-align:left;padding:9px 11px;border:1px solid var(--border);vertical-align:top}
+th{background:#fafbfc;color:var(--text2);font-weight:600}
+.tag{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:9px;white-space:nowrap;font-weight:600}
+.t-p0{background:#fef0f0;color:var(--danger)}.t-p1{background:#fdf6ec;color:var(--warning)}.t-p2{background:#ecf5ff;color:var(--primary)}.t-ok{background:#f0f9eb;color:var(--success)}
+.t-dim{background:#f4f4f5;color:var(--info)}
+code{font-family:ui-monospace,Menlo,monospace;background:#f5f7fa;border:1px solid #ebeef5;border-radius:3px;padding:1px 5px;font-size:11.5px;color:#c0392b}
+.note{background:#f4f4f5;border-left:3px solid var(--info);padding:10px 14px;border-radius:4px;font-size:12.5px;color:var(--text2);margin:12px 0}
+.good{background:#f0f9eb;border-left:3px solid var(--success);padding:10px 14px;border-radius:4px;font-size:12.5px;color:#4a7a2a;margin:12px 0}
+.warn{background:#fdf6ec;border-left:3px solid var(--warning);padding:10px 14px;border-radius:4px;font-size:12.5px;color:#8a6d3b;margin:12px 0}
+ul,ol{margin:8px 0 8px 22px;color:var(--text2)}
+li{margin:5px 0}
+.foot{text-align:center;color:var(--text3);font-size:11.5px;margin-top:30px;padding-top:18px;border-top:1px dashed var(--border)}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;margin-right:6px}
+.b-red{background:#fef0f0;color:var(--danger)}.b-org{background:#fdf6ec;color:var(--warning)}.b-grn{background:#f0f9eb;color:var(--success)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="hd">
+  <h1>商品主数据管理系统 · 前端原型 v1.6 全面评审报告</h1>
+  <div class="meta">
+    评审对象：<b>前端原型_v1.6.html（管理回归版）</b>　|　评审时间：<b>2026-11-23 20:10</b><br>
+    评审依据：<b>方案二 v3.5（定位与边界）</b> · <b>架构方案 v1.1（Vue3+FastAPI）</b> · <b>PostgreSQL 实库（数据保真）</b> · <b>业务员视角走查</b>
+  </div>
+</div>
+<div class="body">
+
+<h2>一、总体结论</h2>
+<div class="verdict">
+  <b>结论：定位与骨架已经对了，但还有 2 个 P0（权限穿透、数据保真回潮）必须在开发启动前修掉，另有 4 个 P1 会直接影响可用性。</b>
+  <p style="margin-top:8px">v1.6 完成了从"扫码工作台"回归"主数据管理"的关键纠偏，信息架构、数据规模、双通道录入都与方案对齐。本轮评审用机器扫描 + 实库对账 + 角色走查，共发现 <b>12 项问题</b>（P0×2 / P1×4 / P2×6），同时确认 <b>8 项通过</b>。原型作为可演示的交互稿合格，作为开发基线需先修 P0。</p>
+  <div class="score">
+    <div><b>2</b> P0 严重</div><div><b>4</b> P1 重要</div><div><b>6</b> P2 一般</div><div><b>8</b> 通过项</div><div><b>20</b> 空壳按钮</div>
+  </div>
+</div>
+
+<h2>二、分维度评审</h2>
+<table>
+<tr><th style="width:110px">维度</th><th style="width:70px">评价</th><th>要点</th></tr>
+<tr><td>定位一致性</td><td><span class="tag t-ok">优秀</span></td><td>首页管理驾驶舱、扫码归附录 B、双通道建档，与方案 v3.5「核心目标=管理维护系统」完全对齐；v1.3 的功能错位已纠正</td></tr>
+<tr><td>信息架构</td><td><span class="tag t-ok">优秀</span></td><td>两层结构（工作台 / 管理后台）+ 5 个独立后台菜单，分类树与详情即点即改，符合"以商品为核心"</td></tr>
+<tr><td>数据保真</td><td><span class="tag t-p0">有错</span></td><td>分类树 149 小类与实库逐条吻合；但啤酒路径写成"食品→酒类→啤酒"（实为"酒类→啤酒"），补价计数 537/53,574 自相矛盾</td></tr>
+<tr><td>权限正确性</td><td><span class="tag t-p0">重大缺陷</span></td><td>录入员视角下 5 个管理后台菜单仍全部可点，无路由拦截；角色切换只切换徽标，与权限矩阵声明冲突</td></tr>
+<tr><td>交互完整性</td><td><span class="tag t-p1">有断点</span></td><td>用户管理、商品档案左树、两段式查重是真实交互；但 20 处按钮只弹 toast，核心管理动作（属性模板、换码、字典、批量导入）无实际表单</td></tr>
+<tr><td>业务易用性</td><td><span class="tag t-ok">良好</span></td><td>术语基本清零、点字即改、左树右表；剩余 0.90/0.70 置信度数字直接暴露给业务</td></tr>
+<tr><td>视觉专业度</td><td><span class="tag t-ok">良好</span></td><td>卡片/标签/表格风格统一，统计卡与详情抽屉层次清晰；长名称无截断策略，宽表可能溢出</td></tr>
+<tr><td>技术可行性</td><td><span class="tag t-ok">对齐</span></td><td>三段式查重、CSV 500 行/批、双账号、留痕机制与架构 v1.1 端点一一对应；JS 语法/元素引用/事件函数机器校验全通过</td></tr>
+</table>
+
+<h2>三、P0 严重问题（开发前必须修）</h2>
+
+<h3><span class="tag t-p0">P0-1</span> 权限穿透：录入员能进全部管理后台</h3>
+<p><b>现象：</b>顶部角色切换器切到「录入员（张三）」后，左侧"管理后台"5 个菜单（分类与属性模板、条码管理、基础字典、数据治理、用户管理）<b>依然全部可点击并正常打开页面</b>。</p>
+<p><b>证据：</b>CSS 第 112 行 <code>body.admin .nav-item .adm{display:none}</code> 只隐藏了"管理员"文字徽标，没有任何规则隐藏菜单本身；<code>switchRole()</code> 只切换 roleTag 文案与 body class，<code>go()</code> 函数无任何权限判断。权限矩阵（用户管理页）却明确写着录入员对"分类/属性模板/条码/字典"、"用户管理"均为「—」。</p>
+<p><b>影响：</b>原型自称"切换角色体验权限差异"，实际演示的是错误行为；若按此实现，录入员可直接打开用户管理给自己提权，权限体系形同虚设。这是安全级问题，不是体验瑕疵。</p>
+<p><b>建议：</b>① 非管理员视角下整个 <code>.nav-group.admin</code> 用 <code>display:none</code> 隐藏；② <code>go()</code> 增加角色守卫，直接跳转 admin 类菜单时拦截并提示；③ 角色切换器补上第三档「只读」，让权限矩阵三列都可演示。</p>
+
+<h3><span class="tag t-p0">P0-2</span> 数据保真回潮：啤酒分类路径错误 + 补价计数自相矛盾</h3>
+<p><b>现象 A（路径错）：</b>详情页第 371 行、分类页第 492 行写「食品 → 酒类 → 啤酒」，但实库查证 <code>C0203</code> 的 parent 是 <code>C02</code>、path 为 <code>/C02/C0203/</code>，正确路径是「酒类 → 啤酒」。食品(C01)与酒类(C02)是并列大类，啤酒不在食品之下。此错误 v1.1 曾修过，本轮回潮。</p>
+<p><b>现象 B（计数错）：</b>补价清单页 page-desc 显示剩余 <code>53,574</code> 条，但脚本第 904 行 <code>let fpLeft=537</code>。点一次"保存"后计数骤变为 <code>536</code>，与首页概览卡、page-desc 的 53,574 完全对不上。</p>
+<p><b>影响：</b>原型承诺"数据与真实库一致"，这两处直接破坏可信度；开发若照抄路径会污染分类导航，计数 bug 会被当成真实逻辑。</p>
+<p><b>建议：</b>统一改为「酒类 → 啤酒」；<code>fpLeft</code> 初值改为 <code>53574</code>（或改为按页面显示值递减）。</p>
+
+<h2>四、P1 重要问题</h2>
+
+<h3><span class="tag t-p1">P1-1</span> 20 处空壳按钮，核心管理动作无表单</h3>
+<p>机器扫描确认 20 处 <code>onclick="toast(...)"</code>，点击只弹提示。需分级处理：</p>
+<table>
+<tr><th style="width:130px">类别</th><th style="width:250px">具体按钮</th><th>评审意见</th></tr>
+<tr><td><span class="tag t-p1">断头动线</span></td><td>商品档案"查询"、治理页"查看积压商品"、治理页"导出清单"</td><td>查询按钮不真过滤（用户管理页却真筛选，标准不一）；"查看积压商品"理应跳转到商品档案·未分类节点，是明确断头，必须补</td></tr>
+<tr><td><span class="tag t-p1">核心功能空壳</span></td><td>分类页"编辑/设置属性模板"、条码页"提交换码"、字典页"新增单位/编辑"×3、批量导入"上传并校验"、属性页"保存属性"</td><td>这些是方案二的管理核心。作为可演示原型建议至少补 1-2 个关键表单（属性模板、字典编辑），其余可标注"开发期实现"</td></tr>
+<tr><td><span class="tag t-dim">原型合理留白</span></td><td>导出数据×2、影响分析、外部编码对照、条码检查、导入说明、类目增设提案等</td><td>属重功能或跨系统动作，原型阶段用 toast 说明可接受，但建议统一加"（原型演示）"前缀避免误解</td></tr>
+</table>
+
+<h3><span class="tag t-p1">P1-2</span> 分类管理页的树是"半静态"，与商品档案页不一致</h3>
+<p><b>现象：</b>分类管理页（<code>s-category</code>）中生鲜冷品、饮料、家居用品、数码五金等节点的 <code>▸</code> 箭头没有 onclick，点不开；只有食品/酒类是硬编码展开的静态 HTML，节点也没有商品档案页那样的完整 149 小类数据。而商品档案页的树有 <code>tg()</code> 折叠、<code>pickCat()</code> 联动、搜索框过滤，是真交互。</p>
+<p><b>建议：</b>两处树应复用同一套渲染函数（<code>buildTree()</code>），分类管理页也做成可展开的完整树，管理员才能维护任一小类的属性模板。</p>
+
+<h3><span class="tag t-p1">P1-3</span> 业务黑话残留：置信度数字直接暴露</h3>
+<p>基础字典页"数据来源说明"表格第 560/561 行显示「更可靠（0.90）」「次可靠（0.70）」。<code>0.90/0.70</code> 是系统内部置信度分值，v1.2 评审曾明确要求术语清零，这里回潮。业务人员看到小数分值只会困惑。</p>
+<p><b>建议：</b>去掉括号里的数字，只保留「更可靠 / 次可靠」人话，采用规则用文字说明即可。</p>
+
+<h3><span class="tag t-p1">P1-4</span> 详情页"点击分类可调整"是空声明</h3>
+<p>详情页第 352 行 meta 写「分类：啤酒（点击分类可调整）」，但该行文字不可点；真正的分类修改藏在"基本信息"Tab 下方的 select 里，且选项还是错的"食品→酒类→啤酒"（见 P0-2）。<b>建议：</b>要么让 meta 那行可点直接弹分类选择器，要么去掉"可调整"文案，避免误导。</p>
+
+<h2>五、P2 一般问题</h2>
+<table>
+<tr><th style="width:60px">编号</th><th style="width:230px">问题</th><th>说明与建议</th></tr>
+<tr><td>P2-1</td><td>所有分页器是装饰</td><td>各页 pager 的 ‹/1/2/3/› 按钮无 onclick，点了无反应。原型可接受，建议加统一 toast 或标注"原型演示"</td></tr>
+<tr><td>P2-2</td><td>商品名超长无截断</td><td>如"青岛啤酒经典1903-9度258毫升*6*4复古装箱啤"在列表撑宽表格。建议 CSS 单行省略 + title 悬停全文</td></tr>
+<tr><td>P2-3</td><td>只读角色无法演示</td><td>权限矩阵列了"只读"，但角色切换器只有录入员/管理员两档。建议补第三档</td></tr>
+<tr><td>P2-4</td><td>登录页是静态的</td><td>账号密码 readonly，点登录直接进。原型可接受</td></tr>
+<tr><td>P2-5</td><td>面包屑不随子页面更新</td><td>进补价清单、商品详情后，左侧导航无高亮项，crumb 虽更新但导航区"无任何选中"略显迷失。建议给子页面一个"归属"高亮</td></tr>
+<tr><td>P2-6</td><td>系统信息栏含内部指标</td><td>详情页"数据可信度 高 · 数据质量 96 分"是治理侧指标，与方案"数据质量考核剥离"边界略有出入。建议弱化为"数据来源：人工核对"一句</td></tr>
+</table>
+
+<h2>六、通过项（确认无误）</h2>
+<div class="good">
+<b>以下 8 项经机器校验 / 实库对账，确认正确：</b>
+<ol>
+<li><b>数据规模一致</b>：4,325,381 总数出现 3 处、197,059 未分类 5 处、138,083 一码多品 3 处、53,574 待补价 3 处、31,088 啤酒 3 处，跨页面无矛盾（计数 bug 除外）</li>
+<li><b>分类树数据保真</b>：13 大类 / 149 启用小类及各自商品数与 PG 实库逐条吻合（含卷烟 103 小类）</li>
+<li><b>扫码残留清除干净</b>：全文件仅剩 2 处说明性文字，无任何扫码功能入口或 scanGo 等函数</li>
+<li><b>定位对齐方案</b>：首页、建档流程、授权边界均与方案 v3.5 一致，扫码类归附录 B</li>
+<li><b>用户管理交互闭环</b>：统计卡 / 真筛选 / 详情抽屉 / 表单校验 / 状态与密码管理全部可用，确认框支持回调真落地</li>
+<li><b>左树右表 + 即点即改</b>：商品档案树可选中联动、字段点字变输入框、回车保存</li>
+<li><b>两段式查重</b>：条码命中 + 同名命中双路反馈，命中禁止建档，与架构 <code>/api/v1/goods/check</code> 端点对应</li>
+<li><b>技术校验全过</b>：JS 语法通过、0 个缺失元素 ID、0 个未定义事件函数，文件 67KB 结构完整</li>
+</ol>
+</div>
+
+<h2>七、修订优先级建议</h2>
+<div class="warn">
+<b>建议分两批落地：</b>
+<ul>
+<li><b>第一批（v1.7，开发启动前必做）</b>：P0-1 权限拦截（含补只读角色）、P0-2 两处数据修正、P1-4 分类声明、P1-3 置信度数字清理。改动量小、风险高，必须清零。</li>
+<li><b>第二批（v1.8，进入开发同期）</b>：P1-1 断头动线（查询真过滤、查看积压跳转）+ 补 1-2 个核心表单（属性模板 / 字典编辑）、P1-2 统一树组件、P2 视觉与提示优化。</li>
+</ul>
+<b>总体判断：</b>系统骨架与业务定位已经稳定，剩余问题是"打磨"而非"返工"。P0 修复后即可作为 D1 开发的交互基线。
+</div>
+
+<div class="foot">评审方法：机器静态扫描（toast/ID/函数/黑话）+ PostgreSQL 实库对账 + 三角色任务走查 · 报告基于 v1.6 原型逐行核验，非泛泛而谈</div>
+</div>
+</div>
+</body>
+</html>

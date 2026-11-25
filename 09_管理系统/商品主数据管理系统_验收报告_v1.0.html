@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>商品主数据管理系统 · 验收报告 v1.0（D13）</title>
+<style>
+:root{--pri:#2563eb;--line:#e2e8f0;--mut:#64748b;--grn:#059669;--amb:#d97706;--red:#dc2626;--vio:#7c3aed}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:13.5px;color:#1e293b;background:linear-gradient(135deg,#eef2ff,#f8fafc);line-height:1.7}
+.wrap{max-width:1180px;margin:0 auto;padding:28px}
+.hero{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border-radius:14px;padding:30px 34px;margin-bottom:20px;box-shadow:0 10px 30px rgba(37,99,235,.25)}
+.hero h1{font-size:25px;margin-bottom:6px}
+.hero .sub{opacity:.9;font-size:13.5px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px}
+.kpi{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:9px;padding:12px}
+.kpi .n{font-size:22px;font-weight:700}.kpi .l{font-size:11px;opacity:.85;margin-top:2px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 26px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+h2{font-size:18px;margin:0 0 14px;padding-left:11px;border-left:4px solid var(--pri)}
+h3{font-size:15px;margin:18px 0 9px;color:#1e3a8a}
+h4{font-size:13.5px;margin:12px 0 6px;color:#334155}
+p{margin:8px 0}
+table{width:100%;border-collapse:collapse;font-size:12.6px;margin:10px 0}
+th{background:#f1f5f9;text-align:left;padding:8px 10px;border:1px solid var(--line);font-weight:600;color:#334155;white-space:nowrap}
+td{padding:7px 10px;border:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:#fcfdfe}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;background:#eef2ff;color:#4338ca;padding:1px 5px;border-radius:4px;font-size:11.7px}
+.tag{display:inline-block;padding:1px 8px;border-radius:5px;font-size:11px;font-weight:600;white-space:nowrap}
+.t-ok{background:#d1fae5;color:#047857}.t-warn{background:#fef3c7;color:#b45309}.t-blue{background:#dbeafe;color:#1d4ed8}.t-grn{background:#d1fae5;color:#047857}.t-vio{background:#ede9fe;color:#6d28d9}
+.note{background:#eff6ff;border-left:4px solid var(--pri);padding:11px 15px;border-radius:6px;font-size:13px;margin:12px 0}
+.warn{background:#fff7ed;border-left:4px solid var(--amb);padding:11px 15px;border-radius:6px;font-size:13px;margin:12px 0}
+.good{background:#ecfdf5;border-left:4px solid var(--grn);padding:11px 15px;border-radius:6px;font-size:13px;margin:12px 0}
+ul,ol{margin:6px 0;padding-left:22px}li{margin:4px 0}
+.mini{font-size:12px;color:var(--mut)}
+.footer{text-align:center;color:var(--mut);font-size:12px;margin-top:26px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.box{background:#f8fafc;border:1px solid var(--line);border-radius:7px;padding:13px 15px}
+.box b{color:#1e3a8a}
+.step{background:#f8fafc;border-left:3px solid var(--pri);padding:10px 14px;margin:8px 0;border-radius:0 6px 6px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <h1>商品主数据管理系统 · 验收报告</h1>
+    <div class="sub">D13 终验 · v1.0 · 2026-11-23 · 基于详细开发方案 v1.2（开工基线）</div>
+    <div class="kpis">
+      <div class="kpi"><div class="n">D1~D13</div><div class="l">阶段全部完成</div></div>
+      <div class="kpi"><div class="n">40</div><div class="l">API 端点全实现</div></div>
+      <div class="kpi"><div class="n">11</div><div class="l">前端页面（含登录）</div></div>
+      <div class="kpi"><div class="n">35</div><div class="l">pytest 全绿</div></div>
+      <div class="kpi"><div class="n">19/19</div><div class="l">业务功能勾验</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>一、验收结论</h2>
+    <div class="good"><b>✓ 通过，系统可交付使用。</b>D1~D13 全部阶段完成；后端 40 端点、前端 11 页面、4 条铁律、三角色权限、离线桥、systemd 托管、nginx 同源反代、每日备份 + 灾备 RTO 均已实测。访问地址：<code>http://10.16.2.43:8090/</code>（局域网可达）。</div>
+    <table>
+      <tr><th>验收维度</th><th>依据</th><th>结果</th></tr>
+      <tr><td>40 端点契约</td><td>接口 v1.2 / OpenAPI 实测（GET18/POST15/PUT6/PATCH1）</td><td><span class="tag t-ok">通过</span></td></tr>
+      <tr><td>4 条铁律</td><td>方案二 v3.5 §6「四条铁律系统可验证」</td><td><span class="tag t-ok">通过</span></td></tr>
+      <tr><td>19 项业务功能</td><td>开发方案 v1.2 §5.2 映射表（5+4+3+3+4）</td><td><span class="tag t-ok">19/19</span></td></tr>
+      <tr><td>前后端契约一致</td><td>0 裸 fetch（仅 client.js 2 处受控）/ 0 字段漂移</td><td><span class="tag t-ok">通过</span></td></tr>
+      <tr><td>权限隔离</td><td>三角色 JWT claim；goods_app 越权被 DB 拒；goods_ro 只读</td><td><span class="tag t-ok">通过</span></td></tr>
+      <tr><td>部署与恢复</td><td>systemd 自愈 / nginx 反代 / 前端秒级回滚 / 灾备 RTO</td><td><span class="tag t-ok">通过</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>二、操作手册 · 业务员（录入员 Operator）</h2>
+    <h3>1. 登录</h3>
+    <div class="step">打开 <code>http://10.16.2.43:8090/</code> → 输入账号 <code>operator</code> / 密码 <code>Mdm@2026</code>（首次登录建议修改）→ 登录。右上角显示角色「录入员」，管理后台菜单不可见。</div>
+    <h3>2. 建档（新品引进）</h3>
+    <div class="step"><b>第一步 · 两段式查重：</b>工作台 →「新增商品」→ 填条码 + 商品名称 →「开始查重」。系统做条码命中（BLOCK 拒建）+ 同名命中（WARN 提示）；三态结果即时显示。</div>
+    <div class="step"><b>第二步 · 填档案：</b>查重通过后选分类、单位、进价、售价 →「确认建档」。条码建档后不可修改。</div>
+    <h3>3. 改商品 / 补价</h3>
+    <div class="step">商品档案页左边选分类、右边看商品，可按条码/名称查询 → 点进详情 → 点价格/名称即变输入框，改完回车保存，自动留痕。工作台「价格待补」入口可逐条补价，填一个少一个。</div>
+    <h3>4. 批量导入 / 导出</h3>
+    <div class="step">新增商品页切到「批量导入」→ 下载 CSV 模板 → 填写 → 上传校验（500 行/批事务，失败行清单可查）。导出在商品档案/工作台按钮，上限 20 万行，行为记入日志。</div>
+
+    <h3>管理员（Steward）额外操作</h3>
+    <div class="step"><b>分类与属性模板：</b>管理后台 →「分类与属性模板」→ 选类目 → 调整影响分析 / 外部码对照 / 设置属性模板（JSONB，Steward 权限）。</div>
+    <div class="step"><b>条码管理：</b>条码校验（格式+禁复用+别名+书号四检查）、换码登记、别名归并。</div>
+    <div class="step"><b>用户管理：</b>统计卡、查询筛选、点行看详情抽屉（基本信息/权限/活动）、新增/编辑、启停、重置密码。</div>
+    <div class="step"><b>商品停用/作废：</b>详情页管理员可见「停用/作废」按钮；作废后条码 90 天禁复用；状态反向流转被 3007 拒绝。</div>
+  </div>
+
+  <div class="card">
+    <h2>三、四条铁律验收清单（逐条演示）</h2>
+    <table>
+      <tr><th style="width:140px">铁律</th><th>验收动作（实测）</th><th>结果</th></tr>
+      <tr><td>① 查重 BLOCK</td><td>对已存在的条码 <code>6901035623162</code> 调 <code>POST /goods/check</code> → 返回 <code>verdict=BLOCK</code>、reason「条码已被占用」；重复建档被 3001 拒。干净条码返回 PASS。</td><td><span class="tag t-ok">已验证</span></td></tr>
+      <tr><td>② 条码不可改</td><td>对 <code>PATCH /goods/{barcode}</code> 传 <code>field=barcode</code> → 422 白名单拒绝；详情页条码字段无编辑入口。</td><td><span class="tag t-ok">已验证</span></td></tr>
+      <tr><td>③ VOIDED 禁复用</td><td>E2E 建测试商品 → 状态流转至 VOIDED → <code>POST /barcodes/validate</code> 返回 <code>in_ban_period=true, allowed=false</code>；恢复被 3007 拒。</td><td><span class="tag t-ok">已验证</span></td></tr>
+      <tr><td>④ 全改动留痕</td><td>建档/PATCH/属性写/状态流转均写 <code>sys_change_log</code> + <code>mdm_goods_history</code>，batch_id 为 <code>MAN-YYYYMMDDHHMMSS-&lt;operator&gt;</code>；goods_app 对审计表 DELETE 被 DB 拒（实测清理时由 DBA 删除）。</td><td><span class="tag t-ok">已验证</span></td></tr>
+    </table>
+    <div class="note">四条铁律均有 E2E 全链路实测证据（建档→查重 BLOCK→PATCH→属性→历史→停用→作废→禁复用），对应 pytest test_ironrules.py（16 分支）+ test_auth_state.py（5）+ 契约测试（13）+ 状态用例（1）= 35 passed。</div>
+  </div>
+
+  <div class="card">
+    <h2>四、19 项业务功能逐行勾验（开发方案 v1.2 §5.2）</h2>
+    <table>
+      <tr><th>域</th><th>功能</th><th>端点（v1.2）</th><th>实测状态</th></tr>
+      <tr><td>商品</td><td>主档查询</td><td><code>GET /goods</code> · <code>GET /goods/{barcode}</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>商品</td><td>查重建档</td><td><code>POST /goods/check</code> · <code>POST /goods</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>商品</td><td>档案维护</td><td><code>PATCH /goods/{barcode}</code> · <code>POST /…/category</code> · <code>GET /goods/export</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>商品</td><td>状态流转</td><td><code>POST /goods/{barcode}/status</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>商品</td><td>变更留痕</td><td><code>GET /admin/change-log</code> · <code>GET /goods/{barcode}</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>分类</td><td>类目树管理</td><td><code>GET /categories/tree</code> · <code>PUT /categories/{id}</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>分类</td><td>调整影响分析</td><td><code>POST /categories/{id}/impact</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>分类</td><td>外部码映射</td><td><code>GET/PUT /categories/{id}/external-map</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>分类</td><td>未分类占位管理</td><td><code>GET /goods?category_id=C00</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>属性</td><td>模板配置</td><td><code>GET/PUT /categories/{id}/template</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>属性</td><td>属性维护</td><td><code>GET/PUT /goods/{barcode}/attrs</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>属性</td><td>批量回填</td><td><code>POST /goods/import</code>（属性 CSV → <code>/attributes/import</code>）</td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>条码</td><td>别名归并</td><td><code>POST /barcodes/alias</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>条码</td><td>换码登记</td><td><code>POST /barcodes/reassign</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>条码</td><td>准入规则</td><td><code>POST /barcodes/validate</code> · <code>POST /goods/check</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>基础</td><td>单位字典</td><td><code>GET/POST /admin/units</code> · <code>PUT /admin/units/{code}</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>基础</td><td>来源可信度配置</td><td><code>GET /admin/sources</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>基础</td><td>隔离区查询入口</td><td><code>GET /admin/quarantine</code> · <code>GET …/export</code></td><td><span class="tag t-ok">✓</span></td></tr>
+      <tr><td>基础</td><td>权限与操作人</td><td><code>POST /auth/token</code> · <code>GET/POST /admin/users</code> · <code>PUT /admin/users/{account}</code></td><td><span class="tag t-ok">✓</span></td></tr>
+    </table>
+    <div class="note"><b>映射口径：</b>19 项业务功能与 40 端点为多对多（如"查重建档"跨 2 端点）。全部 19 项均有真实 API + 前端页面对应，逐行通过。</div>
+  </div>
+
+  <div class="card">
+    <h2>五、部署与恢复实测</h2>
+    <table>
+      <tr><th>项</th><th>实测结果</th><th>证据</th></tr>
+      <tr><td>nginx 同源反代</td><td>静态 :8090 + <code>/api/v1/</code> 反代到 :8000，无 CORS</td><td><span class="tag t-ok">200</span></td></tr>
+      <tr><td>systemd 自愈</td><td>kill -9 master 后 6 秒自动拉起，health 恢复</td><td><span class="tag t-ok">active</span></td></tr>
+      <tr><td>gunicorn worker</td><td>UvicornWorker ×2（1 master + 2 worker）</td><td><span class="tag t-ok">3 进程</span></td></tr>
+      <tr><td>前端秒级回滚</td><td>日期目录发布 + 软链切换；v2→v1 回滚站点 200</td><td><span class="tag t-ok">通过</span></td></tr>
+      <tr><td>每日备份</td><td>cron 02:30；208M gzip，gzip -t 通过，保留 7 天</td><td><span class="tag t-ok">通过</span></td></tr>
+      <tr><td>灾备 RTO</td><td>DBA 建临时库 → 恢复 208M → 校验行数 → drop</td><td><span class="tag t-ok">通过</span></td></tr>
+    </table>
+    <div class="good"><b>✓ 灾备 RTO 演练通过（2026-11-23 22:13）。</b>DBA 账号 <code>postgres</code> 建临时库 <code>goods_mdm_rto_test</code> → 恢复 208M 每日备份 → 校验 <code>mdm_goods=4,325,381</code> 行（与生产完全一致，零丢失）、<code>sys_user=3</code> → drop 临时库。恢复耗时约 60 秒（含 208M 灌库与序列复位）。演练与 D1「m1 可撤销验证」目的不同、不重复计。</div>
+  </div>
+
+  <div class="card">
+    <h2>六、D13 终验发现并修复的真实缺陷</h2>
+    <div class="warn"><b>隐藏 bug：所有 pydantic 校验失败曾返回 500 而非 422。</b>
+      <ul>
+        <li><b>现象</b>：PATCH 传非法字段（如 <code>barcode</code>）或任何请求体校验失败时，返回 <code>code=5000 服务端异常</code> 而非契约规定的 422。</li>
+        <li><b>根因</b>：<code>validation_handler</code> 的 <code>exc.errors()</code> 在 pydantic v2 下 <code>ctx.error</code> 是 ValueError 对象，<code>json.dumps</code> 无法序列化 → 处理器自身抛 500。</li>
+        <li><b>修复</b>：① 新增 <code>_jsonable()</code> 把异常对象降级为字符串；② <code>PatchBody</code> 白名单从 4 字段扩到与铁律②一致的 8 字段（barcode 仍永久拒绝）。</li>
+        <li><b>复验</b>：改 barcode → <code>422 + 明确错误信息</code>；合法字段 → <code>200</code>；35 pytest + 37 项最终全链路全绿，无回归。</li>
+      </ul>
+      此缺陷在 D2~D6 单测中未暴露（测试未覆盖非法字段），由 D13 经 nginx 真实 HTTP 全链路扫出并根治。
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>七、已知口径事项（不影响验收）</h2>
+    <div class="warn">
+      <b>接口方案 v1.3 待修订（文档层，3 处）：</b>
+      <ul>
+        <li>§4.4「登出用内存黑名单」→ 实现为 token_version 落库（已按开发方案 v1.2 备案，回写架构 v1.2）</li>
+        <li>auth/logout 说明「令牌加入黑名单」→ 同步为 token_version+1</li>
+        <li>§6 dashboard <code>price_pending=53574</code> 是过期快照，实库实测 <code>201046</code>（测试已改动态对账）</li>
+      </ul>
+      以上为文档表述与过期快照值，系统实现与实库一致，不影响功能验收。
+    </div>
+    <div class="note"><b>单位名称待业务确认：</b>22 种单位编码已从实库去重入字典表，名称暂标「（待确认）」，需业务确认后由管理员在基础字典页录入正式名称。</div>
+  </div>
+
+  <div class="footer">商品主数据管理系统 · 验收报告 v1.0 · 2026-11-23 · 依据方案二 v3.5 / 架构 v1.1 / 接口 v1.2 / 前端 v1.8 / 开发方案 v1.2 / PG 实库实测</div>
+</div>
+</body>
+</html>
