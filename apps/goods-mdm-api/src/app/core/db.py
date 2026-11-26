@@ -126,6 +126,21 @@ def conn_ro():
         p.putconn(c)
 
 
+def check_database_readiness() -> None:
+    """Verify both database roles can connect and execute a read-only query."""
+    for dsn in (PG_DSN_APP, PG_DSN_RO):
+        conn = psycopg2.connect(
+            dsn,
+            connect_timeout=2,
+            options="-c default_transaction_read_only=on -c statement_timeout=1500",
+        )
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+        finally:
+            conn.close()
+
+
 def close_pools():
     for p in _pools.values():
         p.closeall()

@@ -4,11 +4,12 @@ from __future__ import annotations
 import time
 import uuid
 
-from fastapi import FastAPI, Request
+import psycopg2
+from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .core import config
+from .core import config, db
 from .core.errors import (
     BizError,
     biz_error_handler,
@@ -59,6 +60,16 @@ def create_app() -> FastAPI:
     @app.get("/health", tags=["运维"])
     def health():
         return {"status": "ok", "version": "1.2"}
+
+    @app.get("/ready", include_in_schema=False)
+    def ready(response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        try:
+            db.check_database_readiness()
+        except psycopg2.Error:
+            response.status_code = 503
+            return {"status": "unavailable", "database": "unavailable"}
+        return {"status": "ready", "database": "ok"}
 
     return app
 

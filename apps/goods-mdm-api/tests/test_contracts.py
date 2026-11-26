@@ -65,6 +65,25 @@ def test_health_shape():
     assert r.status_code == 200 and r.json()["status"] == "ok"
 
 
+@pytest.mark.parametrize("database_available", [True, False])
+def test_readiness_status(monkeypatch, database_available):
+    from psycopg2 import OperationalError
+
+    from app.core import db
+
+    def check_readiness():
+        if not database_available:
+            raise OperationalError("internal connection details")
+
+    monkeypatch.setattr(db, "check_database_readiness", check_readiness)
+    response = client.get("/ready")
+    assert response.status_code == (200 if database_available else 503)
+    assert response.headers["cache-control"] == "no-store"
+    assert response.json() == ({"status": "ready", "database": "ok"} if database_available
+                               else {"status": "unavailable", "database": "unavailable"})
+    assert client.get("/health").status_code == 200
+
+
 def test_unauth_rejected():
     r = client.get("/api/v1/goods")
     assert r.status_code == 401
