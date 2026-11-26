@@ -1,0 +1,13 @@
+[Unit]
+Description=Back up the goods_mdm PostgreSQL database
+After=postgresql.service
+RequiresMountsFor=/data/projects/goods-info /data/backups
+
+[Service]
+Type=oneshot
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/data/projects/goods-info
+Environment="PATH=/data/projects/goods-info/data/working/runtime/goods-mdm-api-venv/bin:/usr/bin:/bin"
+EnvironmentFile=/etc/goods-mdm/service.env
+ExecStart=/bin/bash /data/projects/goods-info/ops/backup/backup_goods_mdm.sh

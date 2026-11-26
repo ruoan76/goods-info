@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.bak*
+
+# Secrets and local configuration
+.env
+.env.*
+*.secret
+*.key
+
+# Local environments and dependency caches
+**/venv/
+**/.venv/
+**/node_modules/
+vendor/python-wheels/
+
+# Frontend build output
+apps/goods-mdm-web/dist/
+apps/goods-mdm-web/releases/
+
+# Runtime data and generated evidence
+data/working/
+data/archive/runtime/
+reports/evidence/
+reports/archive/
+*.sqlite3
+*.sqlite3-*
+*.dump
+*.sql.gz
+*.log
+
+# Temporary editor files
+._*
+.DS_Store

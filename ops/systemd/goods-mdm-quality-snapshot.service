@@ -1,0 +1,12 @@
+[Unit]
+Description=Refresh goods_mdm data quality snapshots
+After=postgresql.service
+RequiresMountsFor=/data/projects/goods-info
+
+[Service]
+Type=oneshot
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/data/projects/goods-info
+EnvironmentFile=/etc/goods-mdm/service.env
+ExecStart=/data/projects/goods-info/data/working/runtime/goods-mdm-api-venv/bin/python /data/projects/goods-info/governance/templates/legacy/refresh_quality_snapshot.py
