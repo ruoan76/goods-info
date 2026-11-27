@@ -14,7 +14,7 @@ from ..core import auth as A
 from ..core.audit import audit, audit_goods_history, gen_batch_id
 from ..core.db import conn_app
 from ..core.delivery import ContractError, assert_page, encode_csv_fields, normalize_price_state
-from ..core.errors import CODE_ATTR_REQUIRED, CODE_VERSION_CONFLICT, BizError, ok
+from ..core.errors import CODE_VERSION_CONFLICT, BizError, ok
 from ..daos import catalog as dc
 from ..daos import goods as dg
 from ..daos import admin as da
@@ -23,6 +23,7 @@ from ..schemas.goods import (
     PatchBody, StatusChangeBody,
 )
 from ..services import ironrules as ir
+from ..services.attrs import write_goods_attrs
 
 router = APIRouter(prefix="/goods", tags=["商品"])
 _log = logging.getLogger(__name__)
@@ -229,7 +230,7 @@ def create(body: GoodsCreate, user: dict = Depends(A.require_role(A.OPERATOR, A.
         data = body.model_dump(exclude={"attrs"})
         dg.create_goods(cur, data, batch, user["account"])
         if body.attrs:
-            dc.put_goods_attrs(cur, body.barcode, body.attrs)
+            write_goods_attrs(cur, body.barcode, body.attrs)
         audit_goods_history(cur, barcode=body.barcode, field_name="CREATE",
                             old_value=None, new_value=body.goods_name,
                             operator=user["account"], rule_code="CREATE", batch_id=batch)
@@ -309,18 +310,11 @@ def get_attrs(barcode: str, _: dict = Depends(A.require_role(A.OPERATOR, A.STEWA
 def put_attrs(barcode: str, body: AttrsWriteBody,
               user: dict = Depends(A.require_role(A.OPERATOR, A.STEWARD))):
     with conn_app() as c, c.cursor() as cur:
-        cur.execute("SELECT category_id FROM mdm_goods WHERE barcode=%s", (barcode,))
-        r = cur.fetchone()
-        if not r:
+        written = write_goods_attrs(cur, barcode, body.attrs)
+        if written is None:
             return ok(None)
-        tpl = dc.get_template(cur, r[0] or "")
-        required = (tpl or {}).get("template", {}).get("required", [])
-        missing = [k for k in required if k not in body.attrs]
-        if missing:
-            raise BizError(CODE_ATTR_REQUIRED, f"缺少必填属性: {missing}")
-        old = dc.get_goods_attrs(cur, barcode)
-        dc.put_goods_attrs(cur, barcode, body.attrs)
         batch = gen_batch_id(user["account"])
         audit(cur, entity_type="GOODS_ATTRS", entity_key=barcode, action="ATTRS_WRITE",
-              operator=user["account"], before=old, after=body.attrs, batch_id=batch)
-    return ok({"barcode": barcode, "attrs": body.attrs})
+              operator=user["account"], before=written["old"], after=written["new"],
+              batch_id=batch)
+    return ok({"barcode": barcode, "attrs": written["new"]})

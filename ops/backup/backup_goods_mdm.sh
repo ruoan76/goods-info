@@ -1,6 +1,6 @@
 #!/bin/bash
 # 每日 pg_dump | gzip 到 /data/backups/，保留 7 天
-# 使用 goods_app，通过 PG_DSN_APP 或 libpq 默认凭据连接。
+# 权限迁移完成前仍使用 goods_app。设置 PG_DSN_BACKUP 后改走备份角色。
 set -euo pipefail
 umask 077
 BACKUP_DIR=/data/backups
@@ -13,12 +13,13 @@ touch "$LOG" 2>/dev/null || true
 # 先写临时文件，成功后原子改名（避免失败留下空壳备份）
 TMP="${OUT}.tmp"
 trap 'test ! -e "$TMP" || unlink -- "$TMP"' EXIT
-if [[ -n "${PG_DSN_APP:-}" ]]; then
-  python -c '
+DUMP_DSN="${PG_DSN_BACKUP:-${PG_DSN_APP:-}}"
+if [[ -n "$DUMP_DSN" ]]; then
+  PG_DUMP_DSN="$DUMP_DSN" python -c '
 import os
 from psycopg2.extensions import parse_dsn
 
-dsn = parse_dsn(os.environ.pop("PG_DSN_APP"))
+dsn = parse_dsn(os.environ.pop("PG_DUMP_DSN"))
 for key, variable in (
     ("host", "PGHOST"), ("port", "PGPORT"), ("dbname", "PGDATABASE"),
     ("user", "PGUSER"), ("password", "PGPASSWORD"),

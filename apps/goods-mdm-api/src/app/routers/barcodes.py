@@ -2,13 +2,16 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
+from psycopg2 import IntegrityError
 from pydantic import BaseModel, Field
+from typing import Literal
 
 from ..core import auth as A
 from ..core.audit import audit, gen_batch_id
 from ..core.db import conn_app
-from ..core.errors import ok
+from ..core.errors import CODE_DUP_BARCODE, BizError, ok
 from ..services import ironrules as ir
+from ..services.aliases import register_public_alias
 
 router = APIRouter(prefix="/barcodes", tags=["条码"])
 
@@ -18,9 +21,9 @@ class ValidateBody(BaseModel):
 
 
 class AliasBody(BaseModel):
-    alias_barcode: str
-    master_barcode: str
-    alias_type: str = Field(description="BIG_PACK/OLD_CODE/DIFF_PACK")
+    alias_barcode: str = Field(min_length=8, max_length=13)
+    master_barcode: str = Field(min_length=8, max_length=13)
+    alias_type: Literal["BIG_PACK", "OLD_CODE", "DIFF_PACK"]
 
 
 class ReassignBody(BaseModel):
@@ -56,17 +59,19 @@ def validate(body: ValidateBody, _: dict = Depends(A.require_role(A.OPERATOR, A.
 @router.post("/alias", summary="多包装别名归并")
 def alias(body: AliasBody, user: dict = Depends(A.require_role(A.STEWARD))):
     batch = gen_batch_id(user["account"])
-    with conn_app() as c, c.cursor() as cur:
-        cur.execute(
-            """INSERT INTO mdm_barcode_alias (alias_barcode, master_barcode, alias_type, created_at)
-               VALUES (%s,%s,%s,now()::text)
-               ON CONFLICT (alias_barcode, alias_type) DO UPDATE SET master_barcode=EXCLUDED.master_barcode""",
-            (body.alias_barcode, body.master_barcode, body.alias_type),
-        )
-        audit(cur, entity_type="BARCODE_ALIAS", entity_key=body.alias_barcode,
-              action="ALIAS_CREATE", operator=user["account"], after=body.model_dump(),
-              batch_id=batch)
-    return ok({"alias_barcode": body.alias_barcode, "master_barcode": body.master_barcode})
+    try:
+        with conn_app() as c, c.cursor() as cur:
+            decision = register_public_alias(
+                cur, body.alias_barcode, body.master_barcode, body.alias_type,
+            )
+            if decision == "create":
+                audit(cur, entity_type="BARCODE_ALIAS", entity_key=body.alias_barcode,
+                      action="ALIAS_CREATE", operator=user["account"], after=body.model_dump(),
+                      batch_id=batch)
+    except IntegrityError as exc:
+        raise BizError(CODE_DUP_BARCODE, "别名与已有登记冲突") from exc
+    return ok({"alias_barcode": body.alias_barcode, "master_barcode": body.master_barcode,
+               "idempotent": decision == "idempotent"})
 
 
 @router.post("/reassign", summary="换码登记（旧码 90 天禁复用）")
