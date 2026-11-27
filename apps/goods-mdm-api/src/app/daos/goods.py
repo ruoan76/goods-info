@@ -5,6 +5,7 @@ from decimal import Decimal
 from typing import Any
 
 from ..core.errors import CODE_DEEP_PAGE, BizError
+from ..services.categories import category_paths, goods_category_path
 
 SORT_WHITELIST = {"updated_at", "goods_name", "outprice"}
 
@@ -70,11 +71,12 @@ def list_goods(cur, params: dict) -> dict:
         args + [page_size, offset],
     )
     rows = cur.fetchall()
+    paths = category_paths(cur) if rows else {}
     items = []
     for r in rows:
         items.append({
             "barcode": r[0], "goods_name": r[1], "category_id": r[2],
-            "category_code_path": r[3], "category_path": r[12] or r[3],
+            "category_code_path": r[3], "category_path": paths.get(r[2], {}).get("name"),
             "unit_id": r[4], "unit_name": r[5],
             "inprice": str(r[6]) if r[6] is not None else None,
             "outprice": str(r[7]) if r[7] is not None else None,
@@ -103,10 +105,11 @@ def get_goods(cur, barcode: str) -> dict | None:
     r = cur.fetchone()
     if not r:
         return None
+    paths = category_paths(cur)
     return {
         "barcode": r[0], "goods_name": r[1], "category_id": r[2],
         "category_code_path": r[3], "category_source": r[4],
-        "category_path": r[14] or r[3], "category_level": r[15],
+        "category_path": paths.get(r[2], {}).get("name"), "category_level": r[15],
         "unit_id": r[5], "unit_name": r[6],
         "inprice": str(r[7]) if r[7] is not None else None,
         "outprice": str(r[8]) if r[8] is not None else None,
@@ -148,12 +151,15 @@ def name_hits(cur, goods_name: str, exclude_barcode: str | None = None) -> dict:
 
 
 def create_goods(cur, data: dict, batch_id: str, operator: str) -> None:
+    category_id = data.get("category_id")
+    category_path = goods_category_path(cur, category_id)
+    category_source = "UNCLASSIFIED" if category_id in (None, "C00") else "MANUAL"
     cur.execute(
         """INSERT INTO mdm_goods
-           (barcode, goods_name, category_id, unit_id, inprice, outprice,
+           (barcode, goods_name, category_id, category_path, category_source, unit_id, inprice, outprice,
             quality_grade, status, version, governance_batch, created_at, updated_at)
-           VALUES (%s,%s,%s,%s,%s,%s,%s,'ACTIVE',1,%s,now()::text,now()::text)""",
-        (data["barcode"], data["goods_name"], data.get("category_id"),
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,'ACTIVE',1,%s,now()::text,now()::text)""",
+        (data["barcode"], data["goods_name"], category_id, category_path, category_source,
          data.get("unit_id"), data.get("inprice"), data.get("outprice"),
          data.get("quality_grade", "C"), batch_id),
     )
@@ -188,22 +194,21 @@ def set_status(cur, barcode: str, to_status: str) -> None:
 
 
 def set_category(cur, barcode: str, category_id: str) -> None:
+    category_path = goods_category_path(cur, category_id)
     cur.execute(
-        "UPDATE mdm_goods SET category_id=%s, version=version+1, updated_at=now()::text WHERE barcode=%s",
-        (category_id, barcode),
+        "UPDATE mdm_goods SET category_id=%s, category_path=%s, "
+        "category_source=%s, category_confidence=NULL, "
+        "version=version+1, updated_at=now()::text WHERE barcode=%s",
+        (category_id, category_path, "UNCLASSIFIED" if category_id == "C00" else "MANUAL", barcode),
     )
 
 
-def export_rows(cur, params: dict, limit: int = 200000):
+def export_query(params: dict, limit: int = 200000) -> tuple[str, list]:
     where_sql, args = _build_filter(params)
     where_clause = ("WHERE " + where_sql) if where_sql else ""
-    cur.execute(
-        f"""SELECT g.barcode, g.goods_name, c.category_name, u.name,
+    return (f"""SELECT g.barcode, g.goods_name, c.category_name, u.name,
                    g.inprice, g.outprice, g.quality_grade, g.status, g.updated_at
             FROM mdm_goods g
             LEFT JOIN mdm_category c ON c.category_id=g.category_id
             LEFT JOIN sys_unit u ON u.code=g.unit_id
-            {where_clause} LIMIT %s""",
-        args + [limit],
-    )
-    return cur.fetchall()
+            {where_clause} LIMIT %s""", args + [limit])

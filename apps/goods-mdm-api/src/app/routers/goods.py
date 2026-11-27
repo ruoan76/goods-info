@@ -6,13 +6,14 @@ import io
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from psycopg2 import DataError, IntegrityError
 from pydantic import ValidationError
 
 from ..core import auth as A
 from ..core.audit import audit, audit_goods_history, gen_batch_id
 from ..core.db import conn_app
+from ..core.streaming import ClosingStreamingResponse
 from ..core.errors import CODE_ATTR_REQUIRED, CODE_VERSION_CONFLICT, BizError, ok
 from ..daos import catalog as dc
 from ..daos import goods as dg
@@ -48,27 +49,55 @@ def list_goods(params: dict = Depends(_q), _: dict = Depends(A.require_role(*A.A
 # ---------- 2. 导出（必须在 /{barcode} 之前注册） ----------
 @router.get("/export", summary="流式 CSV 导出")
 def export_goods(params: dict = Depends(_q), user: dict = Depends(A.require_role(*A.ALL_ROLES))):
+    limit, batch_size = 200000, 2000
+    batch = gen_batch_id(user["account"])
+    # Fail audit permission/availability before starting an HTTP response.
     with conn_app() as c, c.cursor() as cur:
-        rows = dg.export_rows(cur, params)
         audit(cur, entity_type="EXPORT", entity_key="goods", action="EXPORT",
-              operator=user["account"], after={"filters": params, "rows": len(rows)})
+              operator=user["account"], after={"filters": params, "limit": limit,
+                                              "state": "STARTED"}, batch_id=batch)
 
     def gen():
-        buf = io.StringIO()
-        w = csv.writer(buf)
-        w.writerow(["条码", "商品名称", "分类", "单位", "进价", "售价", "等级", "状态", "更新时间"])
-        yield "\ufeff" + buf.getvalue()
-        buf.seek(0); buf.truncate(0)
-        for r in rows:
-            w.writerow([r[0], r[1], r[2] or "", r[3] or "",
-                        "" if r[4] is None else str(r[4]),
-                        "" if r[5] is None else str(r[5]),
-                        r[6], r[7], str(r[8])])
-            yield buf.getvalue(); buf.seek(0); buf.truncate(0)
+        emitted, truncated, state = 0, False, "INTERRUPTED"
+        try:
+            with conn_app() as c, c.cursor(name="goods_export") as cur:
+                sql, args = dg.export_query(params, limit + 1)
+                cur.itersize = batch_size
+                cur.execute(sql, args)
+                buf = io.StringIO()
+                w = csv.writer(buf)
+                w.writerow(["条码", "商品名称", "分类", "单位", "进价", "售价", "等级", "状态", "更新时间"])
+                yield "\ufeff" + buf.getvalue()
+                buf.seek(0); buf.truncate(0)
+                while emitted < limit:
+                    rows = cur.fetchmany(min(batch_size, limit - emitted))
+                    if not rows:
+                        break
+                    for r in rows:
+                        w.writerow([r[0], r[1], r[2] or "", r[3] or "",
+                                    "" if r[4] is None else str(r[4]),
+                                    "" if r[5] is None else str(r[5]),
+                                    r[6], r[7], str(r[8])])
+                    emitted += len(rows)
+                    yield buf.getvalue()
+                    buf.seek(0); buf.truncate(0)
+                truncated = emitted == limit and bool(cur.fetchmany(1))
+                if truncated:
+                    w.writerow(["#", "已达到导出上限 200000 行，结果已截断，请缩小筛选范围", "", "", "", "", "", "", ""])
+                    yield buf.getvalue()
+                state = "COMPLETED"
+        finally:
+            # The producer's DB connection is released before opening the audit
+            # transaction. Preserve partial-export evidence on errors/disconnect.
+            with conn_app() as c, c.cursor() as cur:
+                audit(cur, entity_type="EXPORT", entity_key="goods", action="EXPORT_RESULT",
+                      operator=user["account"], after={"filters": params, "rows": emitted,
+                          "limit": limit, "truncated": truncated, "state": state}, batch_id=batch)
 
-    return Response(
-        content="".join(gen()), media_type="text/csv; charset=utf-8",
-        headers={"Content-Disposition": 'attachment; filename="goods_export.csv"'},
+    return ClosingStreamingResponse(
+        gen(), media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="goods_export.csv"',
+                 "X-Export-Limit": str(limit)},
     )
 
 
@@ -165,10 +194,7 @@ def import_goods(
 def _import_goods_row(cur, row, batch: str, operator: str) -> None:
     barcode = (row.get("条码") or row.get("barcode") or "").strip()
     name = (row.get("商品名称") or row.get("goods_name") or "").strip()
-    if not ir.valid_barcode_format(barcode):
-        raise BizError(3004, "条码格式非法")
-    if ir.is_isbn(barcode):
-        raise BizError(3004, "书号非商品条码")
+    ir.assert_barcode_admissible(barcode)
     goods = GoodsCreate(
         barcode=barcode, goods_name=name,
         category_id=row.get("分类ID") or row.get("category_id") or None,
@@ -177,12 +203,7 @@ def _import_goods_row(cur, row, batch: str, operator: str) -> None:
         outprice=row.get("售价") or row.get("outprice") or None,
         quality_grade=(row.get("等级") or row.get("quality_grade") or "C").strip() or "C",
     )
-    ir.assert_barcode_reusable(cur, barcode)
     ir.assert_can_create(cur, barcode, name)
-    if goods.category_id:
-        category = dc.category_node(cur, goods.category_id)
-        if not category or category["status"] != "ACTIVE":
-            raise BizError(3005)
     dg.create_goods(cur, goods.model_dump(exclude={"attrs"}), batch, operator)
     audit_goods_history(cur, barcode=barcode, field_name="CREATE",
                         old_value=None, new_value=name, operator=operator,
@@ -204,10 +225,8 @@ def goods_detail(barcode: str, _: dict = Depends(A.require_role(*A.ALL_ROLES))):
 
 @router.post("", summary="建档（铁律①②生效点）")
 def create(body: GoodsCreate, user: dict = Depends(A.require_role(A.OPERATOR, A.STEWARD))):
-    if not ir.valid_barcode_format(body.barcode):
-        raise BizError(3004, "条码格式非法（需 8/13 位数字）")
+    ir.assert_barcode_admissible(body.barcode)
     with conn_app() as c, c.cursor() as cur:
-        ir.assert_barcode_reusable(cur, body.barcode)
         ir.assert_can_create(cur, body.barcode, body.goods_name)
         batch = gen_batch_id(user["account"])
         data = body.model_dump(exclude={"attrs"})
@@ -246,9 +265,6 @@ def patch(barcode: str, body: PatchBody, user: dict = Depends(A.require_role(A.O
 def change_category(barcode: str, body: CategoryChangeBody,
                     user: dict = Depends(A.require_role(A.OPERATOR, A.STEWARD))):
     with conn_app() as c, c.cursor() as cur:
-        node = dc.category_node(cur, body.category_id)
-        if not node or node["status"] != "ACTIVE":
-            raise BizError(3005)
         cur.execute("SELECT category_id FROM mdm_goods WHERE barcode=%s FOR UPDATE", (barcode,))
         row = cur.fetchone()
         if not row:

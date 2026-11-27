@@ -276,7 +276,7 @@ const pe = {
             ((o = u.match(/filename="?([^";]+)"?/i)) == null ? void 0 : o[1]) || "goods_export.csv";
           s.click();
           URL.revokeObjectURL(s.href);
-          _.toast("导出已开始 · 行为已记入系统日志", "ok");
+          _.toast("导出完成 · 最多 20 万行；超限时文件末尾会提示截断", "ok");
         } catch (e) {
           _.toast(errorMessage(e), "err");
         }

@@ -81,7 +81,8 @@ def authenticate(account: str, password: str) -> tuple[str, str, int] | None:
             with c.cursor() as cur:
                 cur.execute(
                     "SELECT account, role, status, password_hash, token_version, "
-                    "failed_attempts, locked_until FROM sys_user WHERE account=%s",
+                    "failed_attempts, locked_until FROM sys_user "
+                    "WHERE account=%s FOR UPDATE",
                     (account,),
                 )
                 row = cur.fetchone()

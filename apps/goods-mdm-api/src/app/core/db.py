@@ -94,7 +94,7 @@ def conn_app():
     try:
         yield c
         c.commit()
-    except Exception:
+    except BaseException:
         c.rollback()
         raise
     finally:
@@ -121,9 +121,11 @@ def conn_ro():
     p, c = _checkout("ro")
     try:
         yield c
-        c.rollback()
     finally:
-        p.putconn(c)
+        try:
+            c.rollback()
+        finally:
+            p.putconn(c)
 
 
 def check_database_readiness() -> None:
