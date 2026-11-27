@@ -5,11 +5,12 @@ import csv
 import io
 import secrets
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from ..core import auth as A
 from ..core.audit import audit, gen_batch_id
 from ..core.db import conn_app, conn_ro
+from ..core.delivery import ContractError, assert_page, encode_csv_fields
 from ..core.errors import ok
 from ..daos import admin as da
 from ..schemas.admin import UnitCreate, UnitUpdate, UserCreate, UserUpdate
@@ -71,6 +72,10 @@ def sources(_: dict = Depends(A.require_role(*A.ALL_ROLES))):
 def quarantine(issue_type: str | None = None, batch_id: str | None = None,
                status: str | None = None, page: int = 1, page_size: int = 20,
                _: dict = Depends(A.require_role(*A.ALL_ROLES))):
+    try:
+        assert_page(page, page_size)
+    except ContractError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     from ..daos.catalog import list_quarantine
     params = dict(issue_type=issue_type, batch_id=batch_id, status=status,
                   page=page, page_size=page_size)
@@ -88,10 +93,10 @@ def quarantine_export(issue_type: str | None = None, batch_id: str | None = None
 
     def gen():
         buf = io.StringIO(); w = csv.writer(buf)
-        w.writerow(["条码", "问题类型", "涉及商品数", "状态", "发现时间"])
+        w.writerow(["条码", "问题类型", "冲突字段", "状态", "发现时间"])
         yield "\ufeff" + buf.getvalue(); buf.seek(0); buf.truncate(0)
         for r in rows:
-            w.writerow([r[0], r[1], r[2], r[3], str(r[4])])
+            w.writerow(encode_csv_fields(r, {0, 1, 2, 3, 4}))
             yield buf.getvalue(); buf.seek(0); buf.truncate(0)
     return Response(content="".join(gen()), media_type="text/csv; charset=utf-8",
                     headers={"Content-Disposition": 'attachment; filename="quarantine.csv"'})

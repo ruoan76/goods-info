@@ -72,10 +72,12 @@ const C = {
         }
         try {
           await goodsApi.patch(s.barcode, "outprice", t, "价格待补清单批量补价", s.version);
-          savedBarcodes.value.add(s.barcode);
-          pendingCount.value = Math.max(0, pendingCount.value - 1);
+          const inpriceMissing = !s.inprice || +s.inprice <= 0;
+          await loadPendingPrices();
           n.toast(
-            `已保存售价 ¥${(+t).toFixed(2)} · 剩余 ${pendingCount.value.toLocaleString()} 条待补`,
+            inpriceMissing
+              ? `已保存售价 ¥${(+t).toFixed(2)} · 进价仍待补，剩余 ${pendingCount.value.toLocaleString()} 条`
+              : `已保存售价 ¥${(+t).toFixed(2)} · 剩余 ${pendingCount.value.toLocaleString()} 条待补`,
             "ok",
           );
         } catch (a) {

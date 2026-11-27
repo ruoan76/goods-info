@@ -219,7 +219,7 @@ const pe = {
           const e = await goodsApi.list(o);
           A.value = e.items || [];
           V.value = e.total ?? 0;
-          R.value = !!e.total_approx;
+          R.value = e.total_is_approx === true;
           F.value = !!e.has_more;
         } catch (o) {
           _.toast(errorMessage(o), "err");
@@ -267,6 +267,8 @@ const pe = {
           };
           c.value.category_id !== "ALL" && (e.category_id = c.value.category_id);
           p.value && (e.q = p.value);
+          h.value && (e.status = h.value);
+          f.value && (e.price_state = f.value);
           const { resp: t } = await goodsApi.export(e),
             d = await t.blob(),
             u = t.headers.get("content-disposition") || "",

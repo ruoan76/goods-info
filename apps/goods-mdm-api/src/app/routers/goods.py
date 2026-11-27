@@ -13,6 +13,7 @@ from pydantic import ValidationError
 from ..core import auth as A
 from ..core.audit import audit, audit_goods_history, gen_batch_id
 from ..core.db import conn_app
+from ..core.delivery import ContractError, assert_page, encode_csv_fields, normalize_price_state
 from ..core.errors import CODE_ATTR_REQUIRED, CODE_VERSION_CONFLICT, BizError, ok
 from ..daos import catalog as dc
 from ..daos import goods as dg
@@ -25,6 +26,18 @@ from ..services import ironrules as ir
 
 router = APIRouter(prefix="/goods", tags=["商品"])
 _log = logging.getLogger(__name__)
+_GOODS_TEXT_COLUMNS = {0, 1, 2, 3, 6, 7, 8}
+
+
+def _bind_goods_query(params: dict, *, paging: bool) -> dict:
+    try:
+        bound = dict(params)
+        bound["price_state"] = normalize_price_state(bound.get("price_state"))
+        if paging:
+            assert_page(int(bound.get("page", 1)), int(bound.get("page_size", 20)))
+        return bound
+    except ContractError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 def _q(
@@ -41,6 +54,7 @@ def _q(
 # ---------- 1. 分页查询 ----------
 @router.get("", summary="商品分页查询")
 def list_goods(params: dict = Depends(_q), _: dict = Depends(A.require_role(*A.ALL_ROLES))):
+    params = _bind_goods_query(params, paging=True)
     with conn_app() as c, c.cursor() as cur:
         return ok(dg.list_goods(cur, params))
 
@@ -48,6 +62,7 @@ def list_goods(params: dict = Depends(_q), _: dict = Depends(A.require_role(*A.A
 # ---------- 2. 导出（必须在 /{barcode} 之前注册） ----------
 @router.get("/export", summary="流式 CSV 导出")
 def export_goods(params: dict = Depends(_q), user: dict = Depends(A.require_role(*A.ALL_ROLES))):
+    params = _bind_goods_query(params, paging=False)
     with conn_app() as c, c.cursor() as cur:
         rows = dg.export_rows(cur, params)
         audit(cur, entity_type="EXPORT", entity_key="goods", action="EXPORT",
@@ -60,10 +75,10 @@ def export_goods(params: dict = Depends(_q), user: dict = Depends(A.require_role
         yield "\ufeff" + buf.getvalue()
         buf.seek(0); buf.truncate(0)
         for r in rows:
-            w.writerow([r[0], r[1], r[2] or "", r[3] or "",
-                        "" if r[4] is None else str(r[4]),
-                        "" if r[5] is None else str(r[5]),
-                        r[6], r[7], str(r[8])])
+            w.writerow(encode_csv_fields(
+                [r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8]],
+                _GOODS_TEXT_COLUMNS,
+            ))
             yield buf.getvalue(); buf.seek(0); buf.truncate(0)
 
     return Response(
@@ -159,7 +174,8 @@ def import_goods(
         raise
 
     return ok({"job_id": job_id, "batch_id": batch, "total": len(rows),
-               "success": success, "failed": failed, "fail_detail": failures})
+               "success": success, "failed": failed,
+               "fail_detail": failures, "failures": failures})
 
 
 def _import_goods_row(cur, row, batch: str, operator: str) -> None:

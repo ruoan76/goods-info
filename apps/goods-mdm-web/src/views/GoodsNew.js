@@ -283,7 +283,6 @@ const de = {
         );
       }
       async function X() {
-        var l, e;
         if (!V.value) {
           d.toast("请先选择 CSV 文件", "err");
           return;
@@ -291,13 +290,14 @@ const de = {
         k.value = !0;
         try {
           const i = await goodsApi.importCsv(V.value);
+          const fails = i.fail_detail || i.failures || [];
           H.value = i;
           R(
             "上传校验结果",
-            `<div class="result-line ok"><b>✓ 导入完成</b>　job_id：${i.job_id || "—"}</div>
+            `<div class="result-line ok"><b>导入完成</b>　job_id：${i.job_id || "—"}</div>
        <div class="result-line ok">成功 <b>${i.success ?? 0}</b> 行　→ 已按 500 行/批事务写入</div>
-       <div class="result-line ${((l = i.failures) != null && l.length) || i.failed ? "err" : "ok"}">失败 <b>${i.failed ?? ((e = i.failures) == null ? void 0 : e.length) ?? 0}</b> 行</div>
-       ${(i.failures || [])
+       <div class="result-line ${fails.length || i.failed ? "err" : "ok"}">失败 <b>${i.failed ?? fails.length}</b> 行</div>
+       ${fails
          .slice(0, 10)
          .map((c) => `<div class="result-line err">第 ${c.row} 行：${c.reason}</div>`)
          .join("")}

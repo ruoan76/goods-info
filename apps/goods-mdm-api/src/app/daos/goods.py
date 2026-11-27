@@ -4,6 +4,7 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any
 
+from ..core.delivery import normalize_price_state
 from ..core.errors import CODE_DEEP_PAGE, BizError
 
 SORT_WHITELIST = {"updated_at", "goods_name", "outprice"}
@@ -27,11 +28,11 @@ def _build_filter(params: dict) -> tuple[str, list]:
     if params.get("status"):
         where.append("g.status = %s")
         args.append(params["status"])
-    if params.get("price_state") in ("priced", "unpriced"):
-        if params["price_state"] == "unpriced":
-            where.append("(g.inprice IS NULL OR g.inprice=0 OR g.outprice IS NULL OR g.outprice=0)")
-        else:
-            where.append("(g.inprice>0 AND g.outprice>0)")
+    price_state = normalize_price_state(params.get("price_state"))
+    if price_state == "unpriced":
+        where.append("(g.inprice IS NULL OR g.inprice=0 OR g.outprice IS NULL OR g.outprice=0)")
+    elif price_state == "priced":
+        where.append("(g.inprice>0 AND g.outprice>0)")
     return (" AND ".join(where) if where else ""), args
 
 
