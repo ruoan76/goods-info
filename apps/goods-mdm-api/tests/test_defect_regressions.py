@@ -195,13 +195,20 @@ def test_same_second_imports_have_unique_batch_and_multiple_logs(monkeypatch):
     assert query('SELECT count(*) FROM sys_change_log WHERE batch_id=%s',(jobs[0]['batch_id'],))==[(2,)]
 
 
-def test_export_real_named_cursor_multiple_batches_and_audit():
+def test_export_real_named_cursor_multiple_batches_and_audit(tree):
     marker='export_'+uuid4().hex
     with db.conn_app() as c,c.cursor() as cur:
         cur.execute("INSERT INTO mdm_goods(barcode,goods_name,quality_grade,governance_batch) SELECT %s||lpad(i::text,8,'0'),%s,'C','TEST' FROM generate_series(1,4101) i",(marker,marker))
+        cur.execute("UPDATE mdm_goods SET category_id=%s WHERE barcode=%s", (tree[2], marker + "00000001"))
     r=client.get('/api/v1/goods/export',params={'q':marker},headers=hdr('Viewer'))
     rows=list(csv.reader(io.StringIO(r.content.decode('utf-8-sig'))))
-    assert len(rows)==4102 and len(rows[0])==9
+    assert len(rows) == 4102
+    assert rows[0] == ["条码", "商品名称", "上级分类", "分类", "单位",
+                       "进价", "售价", "等级", "状态", "更新时间"]
+    assert all(len(row) == len(rows[0]) for row in rows[1:])
+    by_barcode = {row[0]: row for row in rows[1:]}
+    assert by_barcode[marker + "00000001"][2:4] == ["中", "叶"]
+    assert by_barcode[marker + "00000002"][2] == ""
     assert r.headers['x-export-limit']=='200000'
     assert query("SELECT after_data->>'rows',after_data->>'state' FROM sys_change_log WHERE action='EXPORT_RESULT' AND after_data->'filters'->>'q'=%s",(marker,))==[('4101','COMPLETED')]
     assert not db._pool('app')._used
@@ -241,6 +248,7 @@ def test_export_limit_and_explicit_truncation():
     rows=list(csv.reader(io.StringIO(r.content.decode('utf-8-sig'))))
     assert len(rows)==200002
     assert rows[-1][0]=='#' and '截断' in rows[-1][1]
+    assert len(rows[-1]) == len(rows[0])
     assert all(row[1]==marker for row in rows[1:-1])
     assert query("SELECT after_data->>'rows',after_data->>'truncated' FROM sys_change_log WHERE action='EXPORT_RESULT' AND after_data->'filters'->>'q'=%s",(marker,))==[('200000','true')]
     query('DELETE FROM mdm_goods WHERE goods_name=%s',(marker,))

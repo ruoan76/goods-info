@@ -66,7 +66,9 @@ def export_goods(params: dict = Depends(_q), user: dict = Depends(A.require_role
                 cur.execute(sql, args)
                 buf = io.StringIO()
                 w = csv.writer(buf)
-                w.writerow(["条码", "商品名称", "分类", "单位", "进价", "售价", "等级", "状态", "更新时间"])
+                columns = ["条码", "商品名称", "上级分类", "分类", "单位",
+                           "进价", "售价", "等级", "状态", "更新时间"]
+                w.writerow(columns)
                 yield "\ufeff" + buf.getvalue()
                 buf.seek(0); buf.truncate(0)
                 while emitted < limit:
@@ -74,16 +76,16 @@ def export_goods(params: dict = Depends(_q), user: dict = Depends(A.require_role
                     if not rows:
                         break
                     for r in rows:
-                        w.writerow([r[0], r[1], r[2] or "", r[3] or "",
-                                    "" if r[4] is None else str(r[4]),
-                                    "" if r[5] is None else str(r[5]),
-                                    r[6], r[7], str(r[8])])
+                        barcode, name, parent, category, unit, inprice, outprice, grade, status, updated_at = r
+                        w.writerow([barcode, name, parent or "", category or "", unit or "",
+                                    inprice, outprice, grade, status, updated_at])
                     emitted += len(rows)
                     yield buf.getvalue()
                     buf.seek(0); buf.truncate(0)
                 truncated = emitted == limit and bool(cur.fetchmany(1))
                 if truncated:
-                    w.writerow(["#", "已达到导出上限 200000 行，结果已截断，请缩小筛选范围", "", "", "", "", "", "", ""])
+                    w.writerow(["#", "已达到导出上限 200000 行，结果已截断，请缩小筛选范围"]
+                               + [""] * (len(columns) - 2))
                     yield buf.getvalue()
                 state = "COMPLETED"
         finally:
