@@ -56,14 +56,14 @@ def export_goods(params: dict = Depends(_q), user: dict = Depends(A.require_role
     def gen():
         buf = io.StringIO()
         w = csv.writer(buf)
-        w.writerow(["条码", "商品名称", "分类", "单位", "进价", "售价", "等级", "状态", "更新时间"])
+        w.writerow(["条码", "商品名称", "上级分类", "分类", "单位", "进价", "售价", "等级", "状态", "更新时间"])
         yield "\ufeff" + buf.getvalue()
         buf.seek(0); buf.truncate(0)
         for r in rows:
-            w.writerow([r[0], r[1], r[2] or "", r[3] or "",
-                        "" if r[4] is None else str(r[4]),
+            w.writerow([r[0], r[1], r[2] or "", r[3] or "", r[4] or "",
                         "" if r[5] is None else str(r[5]),
-                        r[6], r[7], str(r[8])])
+                        "" if r[6] is None else str(r[6]),
+                        r[7], r[8], str(r[9])])
             yield buf.getvalue(); buf.seek(0); buf.truncate(0)
 
     return Response(
