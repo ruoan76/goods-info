@@ -38,6 +38,8 @@ def pytest_configure():
 @pytest.fixture(scope="session")
 def test_db():
     if not os.environ.get("GOODS_MDM_TEST_SOCKET"):
+        if os.environ.get("GOODS_MDM_REQUIRE_DB") == "1":
+            pytest.fail("要求独立 PostgreSQL，但未设置 GOODS_MDM_TEST_SOCKET")
         pytest.skip("未配置独立 PostgreSQL 测试实例")
     for suffix, role in (("APP", "goods_test_app"), ("RO", "goods_test_ro")):
         conn = psycopg2.connect(os.environ["PG_DSN_" + suffix])

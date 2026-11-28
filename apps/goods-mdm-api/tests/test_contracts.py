@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
 from app.core.auth import issue_token
-from app.core.config import PG_DSN_APP
+from app.core.config import PG_DSN_APP, PG_DSN_RO
 from app.main import app
 
 client = TestClient(app)
@@ -126,9 +126,10 @@ def test_steward_can_dashboard():
     cur = conn.cursor()
     cur.execute("SELECT count(*) FROM mdm_goods")
     assert d["goods_total"] == cur.fetchone()[0]
+    cur.execute("SELECT count(*) FROM dq_quarantine WHERE status='OPEN'")
+    assert d["quarantine_conflict"] == cur.fetchone()[0]
     cur.close(); conn.close()
     assert d["goods_total_approx"] is False
-    assert d["quarantine_conflict"] == 138083
 
 
 @pytest.mark.usefixtures("contract_users")
@@ -150,10 +151,15 @@ def test_goods_list_fields():
 
 @pytest.mark.usefixtures("contract_users")
 def test_tree_shape():
+    import psycopg2
     r = client.get("/api/v1/categories/tree", headers=hdr("Viewer"))
     d = r.json()["data"]
-    assert "tree" in d and d["total_nodes"] >= 171  # R16 新增 C0604 图书报刊后为 172，治理可再加
-    assert d["active_nodes"] > 0
+    conn = psycopg2.connect(PG_DSN_APP)
+    cur = conn.cursor()
+    cur.execute("SELECT count(*) FROM mdm_category")
+    assert d["total_nodes"] == cur.fetchone()[0]
+    cur.close(); conn.close()
+    assert "tree" in d and d["active_nodes"] > 0
 
 
 @pytest.mark.usefixtures("contract_users")
@@ -171,16 +177,24 @@ def test_dashboard_pending_exact():
     r = client.get("/api/v1/admin/dashboard", headers=hdr("Viewer"))
     d = r.json()["data"]
     assert d["price_pending"] == expect_pending
-    # 不硬编码快照值：C00 受并行治理会话（r13/r15）持续归类影响是活数据，只做动态对账
     assert d["unclassified"] == expect_unclassified
-    assert d["category_l1"] == 13
+    conn = psycopg2.connect(PG_DSN_APP)
+    cur = conn.cursor()
+    cur.execute("SELECT count(*) FROM mdm_category WHERE category_level=1")
+    assert d["category_l1"] == cur.fetchone()[0]
+    cur.close(); conn.close()
 
 
 @pytest.mark.usefixtures("contract_users")
 def test_quarantine_readonly_via_ro():
+    import psycopg2
     r = client.get("/api/v1/admin/quarantine?page_size=2", headers=hdr("Viewer"))
     assert r.status_code == 200
-    assert r.json()["data"]["total"] == 138083
+    conn = psycopg2.connect(PG_DSN_RO)
+    cur = conn.cursor()
+    cur.execute("SELECT count(*) FROM dq_quarantine")
+    assert r.json()["data"]["total"] == cur.fetchone()[0]
+    cur.close(); conn.close()
 
 
 @pytest.mark.usefixtures("contract_users")
