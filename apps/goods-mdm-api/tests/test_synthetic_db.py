@@ -2,7 +2,7 @@
 import pytest
 
 from app.core.errors import BizError
-from app.daos.goods import list_goods
+from app.daos.goods import export_rows, list_goods
 from app.services.aliases import register_public_alias
 
 pytestmark = pytest.mark.usefixtures("test_db")
@@ -14,6 +14,17 @@ def test_pending_filter_excludes_priced_goods(cur):
     assert "6900000000002" in barcodes
     assert "6900000000003" in barcodes
     assert "6900000000001" not in barcodes
+
+
+def test_export_includes_parent_category(cur):
+    rows = {row[0]: row for row in export_rows(cur, {"q": "6900000000001"})}
+    child = rows["6900000000001"]
+    assert child[1] == "已定价商品"
+    assert child[2] == "食品"
+    assert child[3] == "饮料"
+    top = {row[0]: row for row in export_rows(cur, {"q": "6900000000003"})}["6900000000003"]
+    assert top[2] is None
+    assert top[3] == "未分类"
 
 
 def test_existing_main_barcode_cannot_become_alias(cur):

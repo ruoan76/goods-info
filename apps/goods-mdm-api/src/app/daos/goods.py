@@ -199,10 +199,11 @@ def export_rows(cur, params: dict, limit: int = 200000):
     where_sql, args = _build_filter(params)
     where_clause = ("WHERE " + where_sql) if where_sql else ""
     cur.execute(
-        f"""SELECT g.barcode, g.goods_name, c.category_name, u.name,
+        f"""SELECT g.barcode, g.goods_name, p.category_name, c.category_name, u.name,
                    g.inprice, g.outprice, g.quality_grade, g.status, g.updated_at
             FROM mdm_goods g
             LEFT JOIN mdm_category c ON c.category_id=g.category_id
+            LEFT JOIN mdm_category p ON p.category_id=c.parent_id
             LEFT JOIN sys_unit u ON u.code=g.unit_id
             {where_clause} LIMIT %s""",
         args + [limit],

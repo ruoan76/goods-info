@@ -27,7 +27,7 @@ from ..services.attrs import write_goods_attrs
 
 router = APIRouter(prefix="/goods", tags=["商品"])
 _log = logging.getLogger(__name__)
-_GOODS_TEXT_COLUMNS = {0, 1, 2, 3, 6, 7, 8}
+_GOODS_TEXT_COLUMNS = {0, 1, 2, 3, 4, 7, 8, 9}
 
 
 def _bind_goods_query(params: dict, *, paging: bool) -> dict:
@@ -72,12 +72,12 @@ def export_goods(params: dict = Depends(_q), user: dict = Depends(A.require_role
     def gen():
         buf = io.StringIO()
         w = csv.writer(buf)
-        w.writerow(["条码", "商品名称", "分类", "单位", "进价", "售价", "等级", "状态", "更新时间"])
+        w.writerow(["条码", "商品名称", "上级分类", "分类", "单位", "进价", "售价", "等级", "状态", "更新时间"])
         yield "\ufeff" + buf.getvalue()
         buf.seek(0); buf.truncate(0)
         for r in rows:
             w.writerow(encode_csv_fields(
-                [r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8]],
+                [r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9]],
                 _GOODS_TEXT_COLUMNS,
             ))
             yield buf.getvalue(); buf.seek(0); buf.truncate(0)
