@@ -5,10 +5,11 @@ import csv
 import io
 import secrets
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, Query
 
 from ..core import auth as A
 from ..core.audit import audit, gen_batch_id
+from ..core.streaming import ClosingStreamingResponse
 from ..core.db import conn_app, conn_ro
 from ..core.errors import ok
 from ..daos import admin as da
@@ -83,18 +84,27 @@ def quarantine_export(issue_type: str | None = None, batch_id: str | None = None
                       _: dict = Depends(A.require_role(*A.ALL_ROLES))):
     from ..daos.catalog import quarantine_export as qe
     params = dict(issue_type=issue_type, batch_id=batch_id)
-    with conn_ro() as c, c.cursor() as cur:
-        rows = qe(cur, params)
-
     def gen():
-        buf = io.StringIO(); w = csv.writer(buf)
-        w.writerow(["条码", "问题类型", "涉及商品数", "状态", "发现时间"])
-        yield "\ufeff" + buf.getvalue(); buf.seek(0); buf.truncate(0)
-        for r in rows:
-            w.writerow([r[0], r[1], r[2], r[3], str(r[4])])
-            yield buf.getvalue(); buf.seek(0); buf.truncate(0)
-    return Response(content="".join(gen()), media_type="text/csv; charset=utf-8",
-                    headers={"Content-Disposition": 'attachment; filename="quarantine.csv"'})
+        with conn_ro() as c, c.cursor(name="quarantine_export") as cur:
+            qe(cur, params, limit=200001)
+            buf = io.StringIO(); w = csv.writer(buf)
+            w.writerow(["条码", "问题类型", "涉及商品数", "状态", "发现时间"])
+            yield "\ufeff" + buf.getvalue(); buf.seek(0); buf.truncate(0)
+            emitted = 0
+            while emitted < 200000:
+                rows = cur.fetchmany(min(2000, 200000 - emitted))
+                if not rows:
+                    break
+                for r in rows:
+                    w.writerow([r[0], r[1], r[2], r[3], str(r[4])])
+                emitted += len(rows)
+                yield buf.getvalue(); buf.seek(0); buf.truncate(0)
+            if emitted == 200000 and cur.fetchmany(1):
+                w.writerow(["#", "已达到导出上限 200000 行，结果已截断，请缩小筛选范围", "", "", ""])
+                yield buf.getvalue()
+    return ClosingStreamingResponse(gen(), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": 'attachment; filename="quarantine.csv"',
+                             "X-Export-Limit": "200000"})
 
 
 @router.get("/users", summary="用户列表")

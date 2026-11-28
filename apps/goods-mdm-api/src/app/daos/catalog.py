@@ -172,6 +172,12 @@ def get_goods_attrs(cur, barcode: str) -> dict:
 
 
 def put_goods_attrs(cur, barcode: str, attrs: dict) -> None:
+    # Synchronize attribute writes with reassign; never leave attributes at a
+    # stale barcode after waiting for a concurrent identity migration.
+    cur.execute("SELECT 1 FROM mdm_goods WHERE barcode=%s FOR KEY SHARE", (barcode,))
+    if not cur.fetchone():
+        from ..core.errors import BizError, CODE_VERSION_CONFLICT
+        raise BizError(CODE_VERSION_CONFLICT, "商品不存在或已换码")
     import json
     cur.execute(
         """INSERT INTO mdm_goods_attrs (barcode, attrs_json, updated_at)
@@ -232,4 +238,3 @@ def quarantine_export(cur, params: dict, limit: int = 200000):
         f"""SELECT barcode, issue_type, conflict_field, status, created_at
             FROM dq_quarantine {wc} LIMIT %s""", args + [limit]
     )
-    return cur.fetchall()

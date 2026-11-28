@@ -40,9 +40,18 @@ def test_goods_patch_uses_client_version_and_only_editable_fields():
     assert client.get(url, headers=operator).json()["data"]["goods_name"] == "已保存"
 
 
-def test_csv_database_rejection_does_not_abort_following_batch():
+def test_csv_database_rejection_does_not_abort_following_batch(monkeypatch):
+    # Production prices are unbounded numeric, so huge positive values do not
+    # reliably trigger a DB rejection. Inject a real database DataError instead.
+    from app.routers import goods
+    original = goods._import_goods_row
+    def insert_row(cur, row, batch, operator):
+        if row.get("unit_id") == "invalid_unit":
+            cur.execute("SELECT 'invalid_unit'::integer")
+        original(cur, row, batch, operator)
+    monkeypatch.setattr(goods, "_import_goods_row", insert_row)
     before, invalid, after = free_barcodes(3)
-    csv_rows = ["barcode,goods_name,outprice", f"{before},首条,1", f"{invalid},金额超范围,10000000000000000000000"]
+    csv_rows = ["barcode,goods_name,outprice,unit_id", f"{before},首条,1", f"{invalid},单位违反数据库约束,1,invalid_unit"]
     csv_rows += ["invalid,非法条码,1"] * 498
     csv_rows += [f"{after},下一批,2"]
     response = client.post("/api/v1/goods/import", headers=hdr("Operator"),

@@ -13,6 +13,7 @@ from datetime import date, timedelta
 
 from ..core.errors import (
     CODE_ATTR_REQUIRED,
+    CODE_BOOK_ISBN,
     CODE_BANNED_BARCODE,
     CODE_DUP_BARCODE,
     CODE_STATUS_ILLEGAL,
@@ -30,6 +31,18 @@ def is_isbn(barcode: str) -> bool:
 def valid_barcode_format(barcode: str) -> bool:
     """8 或 13 位纯数字。"""
     return barcode.isdigit() and len(barcode) in (8, 13)
+
+
+def barcode_admission_checks(barcode: str) -> dict:
+    return {"format_ok": valid_barcode_format(barcode), "is_isbn": is_isbn(barcode)}
+
+
+def assert_barcode_admissible(barcode: str) -> None:
+    checks = barcode_admission_checks(barcode)
+    if not checks["format_ok"]:
+        raise BizError(CODE_BOOK_ISBN, "条码格式非法（需 8/13 位数字）")
+    if checks["is_isbn"]:
+        raise BizError(CODE_BOOK_ISBN)
 
 
 # ---------------- 铁律①：查重三态 ----------------
@@ -75,6 +88,10 @@ def check_duplicate(cur, barcode: str, goods_name: str) -> dict:
 
 def assert_can_create(cur, barcode: str, goods_name: str) -> dict:
     """写端点硬守卫：BLOCK 直接抛 3001，WARN 放行（由端点提示人工确认）。"""
+    # Acquire before namespace reads, so a concurrent reassign cannot create an
+    # old-code ban between admission and INSERT. Reassign takes conflicting locks.
+    cur.execute("LOCK TABLE mdm_goods, mdm_barcode_alias IN ROW EXCLUSIVE MODE")
+    assert_barcode_reusable(cur, barcode)
     result = check_duplicate(cur, barcode, goods_name)
     if result["verdict"] == "BLOCK":
         raise BizError(CODE_DUP_BARCODE)

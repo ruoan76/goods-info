@@ -1,7 +1,7 @@
 """统一留痕 audit()。
 
 铁律④：任何改动都记录"谁、何时、改了什么"。
-- batch_id 规则 MAN-YYYYMMDDHHMMSS-<operator>：mdm_goods_history.batch_id NOT NULL 无默认值，
+- batch_id 规则 MAN-YYYYMMDDHHMMSS-<operator>-<uuid>：mdm_goods_history.batch_id NOT NULL 无默认值，
   不生成则所有人工变更写历史失败（接口 v1.1 P1 已确认）。
 - sys_change_log 与业务表写在同一事务（由调用方传入 cursor）。
 - goods_app 对 sys_change_log 仅 INSERT 权限（m1 已授权），审计不可篡改。
@@ -9,15 +9,21 @@
 from __future__ import annotations
 
 from datetime import datetime
+from uuid import uuid4
 from typing import Any
 
 from .config import API_PREFIX  # noqa: F401  (保留导入以便配置统一)
 
 
 def gen_batch_id(operator: str) -> str:
-    """MAN-YYYYMMDDHHMMSS-<operator>"""
+    """Return a unique manual batch id while retaining the historic MAN prefix.
+
+    A second-resolution timestamp collides when two imports start together.  The
+    suffix is intentionally opaque and short so the id remains safe for callers
+    and can be reused for every audit row in one logical operation.
+    """
     ts = datetime.now().strftime("%Y%m%d%H%M%S")
-    return f"MAN-{ts}-{operator}"
+    return f"MAN-{ts}-{operator}-{uuid4().hex}"
 
 
 def audit(
